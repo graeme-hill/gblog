@@ -1,0 +1,1 @@
+python ./generator/gbgen.py
