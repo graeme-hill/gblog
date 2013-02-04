@@ -17,10 +17,7 @@
 		<p>2010.170</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: A lesson on using closed source libraries
-labels: .NET, LINQ to SQL, NHibernate, Open Source</p>
-
-<p>A challenging question that programmers are often faced with when chosing a library is whether to go with an open source option or a closed source product that may come with professional support.  The answer of course is "it depends" and the quality of each library will often be more important than whether or not it is open source.  In the past I have not concerned myself too much with whether or not the source code is available to me because I normally don't plan on ever touching it.  I don't use an existing library because I want to spend weeks digging through source code and internals, I use them because I don't want to spend much time on that feature.  I want it to just work<!--break-->.</p>
+		<p>A challenging question that programmers are often faced with when chosing a library is whether to go with an open source option or a closed source product that may come with professional support.  The answer of course is "it depends" and the quality of each library will often be more important than whether or not it is open source.  In the past I have not concerned myself too much with whether or not the source code is available to me because I normally don't plan on ever touching it.  I don't use an existing library because I want to spend weeks digging through source code and internals, I use them because I don't want to spend much time on that feature.  I want it to just work<!--break-->.</p>
 
 <p>In recent projects I have looked closely at both LINQ to SQL and NHibernate for my ORM needs.  Since LINQ to SQL is easy to use and meets my requirements it seemed like a no brainer to use a product from Microsoft over NHibernate since I never planned to edit the NHibernate source.  However, a bug that I recently found in LINQ to SQL has made me think differrently (I wrote about the bug <a href="/linq-to-sql-gotcha-2-getchangeset-weirdness">here</a>).  I don't blame Microsoft for having a bug in their code since all software has bugs, but when I found out that Microsoft does not plan to fix the issue, I suddenly realized that the team had hit a brick wall.  We had already made a big committment to LINQ to SQL.  Now there is a bug that Microsoft won't fix, but they also won't let anyone else fix it!  If NHibernate had been chosen then the worst case scenario is that you have to fix it yourself (though it is likely that someone else will fix it first).</p>
 
@@ -29,5 +26,17 @@ labels: .NET, LINQ to SQL, NHibernate, Open Source</p>
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

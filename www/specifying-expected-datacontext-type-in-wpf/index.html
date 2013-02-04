@@ -17,10 +17,7 @@
 		<p>2009.297</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Specifying expected DataContext type in WPF
-labels: .NET, MVVM, VB.NET, WPF</p>
-
-<p>Josh Smith just made a <a href="http://joshsmithonwpf.wordpress.com/2009/10/24/xaml-tip-datacontext-comment/">blog post about XAML DataContext comments</a> when using the MVVM pattern.  He makes a great point, which is that in many cases it is not immediately obvious what the DataContext of a view is intended to be.  A simple comment as Josh suggests will go a long way, but the downside is that comments create a maintainability issue.  If you rename a model view, or refactor code so that a page, window or user control expects a different DataContext you also need to update the comment.  Here's an example<!--break-->:</p>
+		<p>Josh Smith just made a <a href="http://joshsmithonwpf.wordpress.com/2009/10/24/xaml-tip-datacontext-comment/">blog post about XAML DataContext comments</a> when using the MVVM pattern.  He makes a great point, which is that in many cases it is not immediately obvious what the DataContext of a view is intended to be.  A simple comment as Josh suggests will go a long way, but the downside is that comments create a maintainability issue.  If you rename a model view, or refactor code so that a page, window or user control expects a different DataContext you also need to update the comment.  Here's an example<!--break-->:</p>
 
 <pre><code>&lt;!-- DataContext = SampleModelView --&gt;
 &lt;UserControl x:Class="SampleUserControl"
@@ -106,5 +103,17 @@ End Class
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

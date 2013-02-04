@@ -17,10 +17,7 @@
 		<p>2010.040</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Saving changes to stored procedure results in LINQ to SQL
-labels: .NET, LINQ, LINQ to SQL, SQL Server, VB.NET</p>
-
-<p>The great thing about fetching data via a LINQ to SQL query is that you get a nice formatted result and you can easily save back any changes you make with <code>SubmitChanges()</code>.  Unfortunately, we all inevitably fall into scenarios where we have to make use of stored procedures for performance or other reasons.  If you have a stored procedure whose result set contains columns from just a single table then you can easily map the stored procedure to that table, but in most cases the result set involves multiple tables making things a little more tricky.  It's easy to execute a stored procedure from LINQ to SQL (just drag the SP from the server explorer into the designer and then execute it like a function on the data context) but you lose some of the benefits of LINQ to SQL.  First of all, you just get a flat result set instead of a hierarchical result set using the auto generated entity classes.  Second, you can't just make changes to the result and call <code>SubmitChanges</code>.  Luckily, with a little extra work, the flat, detached result set can be converted into a hierarchical, attached result set where changes can easily be saved<!--break-->.</p>
+		<p>The great thing about fetching data via a LINQ to SQL query is that you get a nice formatted result and you can easily save back any changes you make with <code>SubmitChanges()</code>.  Unfortunately, we all inevitably fall into scenarios where we have to make use of stored procedures for performance or other reasons.  If you have a stored procedure whose result set contains columns from just a single table then you can easily map the stored procedure to that table, but in most cases the result set involves multiple tables making things a little more tricky.  It's easy to execute a stored procedure from LINQ to SQL (just drag the SP from the server explorer into the designer and then execute it like a function on the data context) but you lose some of the benefits of LINQ to SQL.  First of all, you just get a flat result set instead of a hierarchical result set using the auto generated entity classes.  Second, you can't just make changes to the result and call <code>SubmitChanges</code>.  Luckily, with a little extra work, the flat, detached result set can be converted into a hierarchical, attached result set where changes can easily be saved<!--break-->.</p>
 
 <p>If you don't want to bother reading the whole article and all of the code, here's the short answer: use the <code>Attach()</code> method.</p>
 
@@ -90,5 +87,17 @@ End Module
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

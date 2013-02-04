@@ -17,10 +17,7 @@
 		<p>2009.290</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Unit testing an Entity Framework DAL part 2: Rolling back the test database
-labels: .NET, Entity Framework, SQL Server, Unit Testing</p>
-
-<p><strong>Update (Jan 23, 2010):</strong> I have made a <a href="http://graemehill.ca/high-performance-database-rollback-in-automated-tests-with-sql-server">new post</a> explaining a method that I think is better than any of those described here.</p>
+		<p><strong>Update (Jan 23, 2010):</strong> I have made a <a href="http://graemehill.ca/high-performance-database-rollback-in-automated-tests-with-sql-server">new post</a> explaining a method that I think is better than any of those described here.</p>
 
 <p>In <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-1-just-hit-the-database">part one</a> I talked about how there is no true way to unit test your data access code under the standard definition of a unit test.  However, I think it is useful to consider your database and your data access layer as a single unit when it comes to automated testing (read <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-1-just-hit-the-database">part one</a> if you're wondering why).  Everything is a trade off though so there are two important drawbacks to hitting a real database in your tests<!--break-->:</p>
 
@@ -75,5 +72,17 @@ Assuming that the use of MSDTC is an option, this is likely the best choice.  In
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

@@ -17,10 +17,7 @@
 		<p>2009.234</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: WPF rendering thread synchronization
-labels: .NET, VB.NET, WPF</p>
-
-<p><strong>Download the sample project here:</strong> <a href="/resources/samples/WpfRenderingThreadSynchronization.zip">WpfRenderingThreadSynchronization.zip</a></p>
+		<p><strong>Download the sample project here:</strong> <a href="/resources/samples/WpfRenderingThreadSynchronization.zip">WpfRenderingThreadSynchronization.zip</a></p>
 
 <p>In most applications it is necessary to offload long running processes to an alternate thread so that the rest of the program does not lock up during that time.  However, it's not so simple when the long running process is the actual rendering.  Separate windows can have their own UI threads (as explained <a href="http://eprystupa.wordpress.com/2008/07/28/running-wpf-application-with-multiple-ui-threads/">here</a>) but to my knowledge there is no way to use multiple rendering threads on a single window<!--break-->.    </p>
 
@@ -55,5 +52,17 @@ End Sub
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

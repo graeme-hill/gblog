@@ -17,10 +17,7 @@
 		<p>2009.290</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Unit testing an Entity Framework DAL part 1: Just hit the database
-labels: .NET, Entity Framework, SQL Server, Unit Testing, VB.NET</p>
-
-<p>As almost anyone who tries to unit test a database application will quickly discover, databases present a huge problem for unit testing.  Strictly speaking, if you are testing your C# or VB code and you actually hit a real database, then it isn't <em>really</em> a unit test.  It is actually an integration test.  However, I have found that it doesn't really matter what you call it, the end result is that your tests are much more useful if they actually hit a real database.  You don't have to worry about whether the test failed because you screwed up your mock object or if the actual application is buggy and you get better code coverage because even broken SQL will lead to a failed test<!--break-->.</p>
+		<p>As almost anyone who tries to unit test a database application will quickly discover, databases present a huge problem for unit testing.  Strictly speaking, if you are testing your C# or VB code and you actually hit a real database, then it isn't <em>really</em> a unit test.  It is actually an integration test.  However, I have found that it doesn't really matter what you call it, the end result is that your tests are much more useful if they actually hit a real database.  You don't have to worry about whether the test failed because you screwed up your mock object or if the actual application is buggy and you get better code coverage because even broken SQL will lead to a failed test<!--break-->.</p>
 
 <p>There are several methods that can be used to prevent your unit tests from actually using a real SQL Server database, but they all have their problems:</p>
 
@@ -86,5 +83,17 @@ UsersController has a dependency on IUsersModel, so when unit testing the Change
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

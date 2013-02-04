@@ -17,10 +17,7 @@
 		<p>2010.031</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: LINQ to SQL Gotcha #2: GetChangeSet Weirdness
-labels: .NET, LINQ, LINQ to SQL, SQL Server, VB.NET</p>
-
-<p>If you attach an entity with a required association that is nulled out, you will be unable to call <code>GetChangeSet()</code>.  In my opinion, the expected behaviour is that the entity should show up in the change set as though it is valid, but an exception should be thrown when you attempt to call <code>SubmitChanges()</code> because a foreign key constraint has been violated.  In fact, with code like this we will get exactly that result (an exception is thrown on <code>SubmitChanges()</code>)<!--break-->:</p>
+		<p>If you attach an entity with a required association that is nulled out, you will be unable to call <code>GetChangeSet()</code>.  In my opinion, the expected behaviour is that the entity should show up in the change set as though it is valid, but an exception should be thrown when you attempt to call <code>SubmitChanges()</code> because a foreign key constraint has been violated.  In fact, with code like this we will get exactly that result (an exception is thrown on <code>SubmitChanges()</code>)<!--break-->:</p>
 
 <pre><code>Using testData As New TestDataContext
     Dim newArticle As New Article With {.title = "Foobar", _
@@ -66,5 +63,17 @@ End Using
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

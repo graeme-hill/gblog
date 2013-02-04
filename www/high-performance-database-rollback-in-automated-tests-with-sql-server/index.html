@@ -17,10 +17,7 @@
 		<p>2010.023</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: High performance database rollback in automated tests with SQL Server
-labels: .NET, Entity Framework, LINQ, LINQ to SQL, SQL Server, Unit Testing, VB.NET</p>
-
-<p>A couple months ago I wrote <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-1-just-hit-the-database">this</a> article explaining why I think it is reasonable for unit tests to hit a real database.  Subsequently, I wrote a <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-2-rolling-back-the-test-database">follow up article</a> describing some techniques for rolling back your database to its original state after each test.  In that article I found that just using simple transactions did not solve the problem because you need access to all database connections being used, and they all have to be rolled back.  I have since found a way around this problem using distributed transactions<!--break-->.</p>
+		<p>A couple months ago I wrote <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-1-just-hit-the-database">this</a> article explaining why I think it is reasonable for unit tests to hit a real database.  Subsequently, I wrote a <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-2-rolling-back-the-test-database">follow up article</a> describing some techniques for rolling back your database to its original state after each test.  In that article I found that just using simple transactions did not solve the problem because you need access to all database connections being used, and they all have to be rolled back.  I have since found a way around this problem using distributed transactions<!--break-->.</p>
 
 <p>With the <a href="http://en.wikipedia.org/wiki/Distributed_Transaction_Coordinator">Microsoft Distributed Transaction Coordinator</a> (MSDTC) the activity over multiple connections can be lumped into a single transaction using the <code>TransactionScope</code> class.  MSDTC needs to be running for this to work, but since this is just for unit tests it doesn't need to be enabled on your production environment.</p>
 
@@ -107,5 +104,17 @@ End Class
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

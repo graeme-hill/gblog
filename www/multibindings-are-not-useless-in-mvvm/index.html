@@ -17,13 +17,22 @@
 		<p>2009.290</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: MultiBindings are NOT useless in MVVM
-labels: .NET, MVVM, WPF</p>
-
-<p>Lately I have been detecting a growing sentiment that any use of MultiBinding is poor practice in MVVM (<a href="http://groups.google.com/group/wpf-disciples/browse_thread/thread/99a59fecec962376?pli=1">this thread</a> on WPF disciples for example).  However, I think people who say you should <em>never</em> use MultiBinding are missing its point.  It is probably better to make a single binding to a FullName property than to multi bind to FirstName and LastName and then convert it into a full name.  But there is still a scenario that demands the use of MultiBinding: <strong>bindings that need to update when more than one UI property changes</strong>.  MultiBindings are not just used for passing more information to the converter, they also specify when the value needs to be updated and call the converter again.  This is a much more important feature and it requires MultiBinding. </p>
+		<p>Lately I have been detecting a growing sentiment that any use of MultiBinding is poor practice in MVVM (<a href="http://groups.google.com/group/wpf-disciples/browse_thread/thread/99a59fecec962376?pli=1">this thread</a> on WPF disciples for example).  However, I think people who say you should <em>never</em> use MultiBinding are missing its point.  It is probably better to make a single binding to a FullName property than to multi bind to FirstName and LastName and then convert it into a full name.  But there is still a scenario that demands the use of MultiBinding: <strong>bindings that need to update when more than one UI property changes</strong>.  MultiBindings are not just used for passing more information to the converter, they also specify when the value needs to be updated and call the converter again.  This is a much more important feature and it requires MultiBinding. </p>
 
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

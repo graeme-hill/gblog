@@ -17,10 +17,7 @@
 		<p>2009.059</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Verify your property names in INotifyPropertyChanged implementation
-labels: .NET, VB.NET, WPF</p>
-
-<p><strong>Update:</strong> I have posted another article <a href="/easier-propertychanged-notification-with-postsharp">here</a> that explains what I think is a better solution to this problem using a simple PostSharp attribute.</p>
+		<p><strong>Update:</strong> I have posted another article <a href="/easier-propertychanged-notification-with-postsharp">here</a> that explains what I think is a better solution to this problem using a simple PostSharp attribute.</p>
 
 <p>When you raise the <code>PropertyChanged</code> event you have to pass it a property name as a string.  If there is no property with that name then nothing will happen.  The listener will not be notified and no exception will be thrown making the problem very difficult to debug.  You can change this behaviour and make the application fail at runtime by adding a simple check to your helper function for the event<!--break-->:</p>
 
@@ -46,5 +43,17 @@ End Sub
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

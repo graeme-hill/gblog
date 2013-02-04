@@ -17,10 +17,7 @@
 		<p>2009.300</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Finding all validation errors on an IDataErrorInfo object
-labels: .NET, VB.NET, WPF</p>
-
-<p>WPF data binding has built in support for <code>IDataErrorInfo</code>, so it is easy to display a validation error when a property has invalid data.  However, sometimes we need to manually find all the validation errors on an object.  A perfect example of this is when trying to save data.  Often you will want to verify that there are no validation errors before allowing the save operation to proceed.  Using the MVVM pattern it would be ideal to determine whether there are any errors purely within your model view.  The default behavior of <code>IDataErrorInfo</code> does not give a collection of all current errors.  Instead, it will just tell you if a given property has an error (ie: using <code>IDataErrorInfo.Item</code>), so all we have to do to find all the errors is enumerate through each property on the class and call the <code>Item</code> property with that property name as the argument.  The <code>GetValidationErrors</code> function below does exactly that<!--break-->:</p>
+		<p>WPF data binding has built in support for <code>IDataErrorInfo</code>, so it is easy to display a validation error when a property has invalid data.  However, sometimes we need to manually find all the validation errors on an object.  A perfect example of this is when trying to save data.  Often you will want to verify that there are no validation errors before allowing the save operation to proceed.  Using the MVVM pattern it would be ideal to determine whether there are any errors purely within your model view.  The default behavior of <code>IDataErrorInfo</code> does not give a collection of all current errors.  Instead, it will just tell you if a given property has an error (ie: using <code>IDataErrorInfo.Item</code>), so all we have to do to find all the errors is enumerate through each property on the class and call the <code>Item</code> property with that property name as the argument.  The <code>GetValidationErrors</code> function below does exactly that<!--break-->:</p>
 
 <pre><code>Option Strict On
 
@@ -89,5 +86,17 @@ End Class
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

@@ -17,10 +17,7 @@
 		<p>2009.234</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Easier PropertyChanged notification with PostSharp
-labels: .NET, VB.NET, WPF</p>
-
-<p>As I described in <a href="/verify-your-property-names-in-inotifypropertychanged-implementation">this previous article</a> raising the <code>PropertyChanged</code> event for classes that implement <code>INotifyPropertyChanged</code> can be a real pain.  The biggest problem is that <code>PropertyChangedEventArgs</code> takes the name of the property that changed as a string and as we all know, strings are the root of all evil.  Here I will show how to use a simple PostSharp attribute on your properties that need to raise the <code>PropertyChanged</code> event when they are changed so that you don't manually need to do it and hard code the name of the property as a string<!--break-->.  PostSharp is a framework for .NET that allows for aspect oriented programming.  You can read all about it at the <a href="http://www.postsharp.org">PostSharp website</a>.</p>
+		<p>As I described in <a href="/verify-your-property-names-in-inotifypropertychanged-implementation">this previous article</a> raising the <code>PropertyChanged</code> event for classes that implement <code>INotifyPropertyChanged</code> can be a real pain.  The biggest problem is that <code>PropertyChangedEventArgs</code> takes the name of the property that changed as a string and as we all know, strings are the root of all evil.  Here I will show how to use a simple PostSharp attribute on your properties that need to raise the <code>PropertyChanged</code> event when they are changed so that you don't manually need to do it and hard code the name of the property as a string<!--break-->.  PostSharp is a framework for .NET that allows for aspect oriented programming.  You can read all about it at the <a href="http://www.postsharp.org">PostSharp website</a>.</p>
 
 <p>First of all, let's assume that the classes implementing <code>INotifyPropertyChanged</code> are model view classes in the <a href="http://msdn.microsoft.com/en-us/magazine/dd419663.aspx">MVVM pattern</a>.  We will use a base class for all model views called <code>BaseModelView</code> that looks like this:</p>
 
@@ -105,5 +102,17 @@ End Property
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

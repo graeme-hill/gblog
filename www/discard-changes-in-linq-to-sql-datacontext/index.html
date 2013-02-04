@@ -17,10 +17,7 @@
 		<p>2009.040</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: Discard changes in LINQ to SQL DataContext
-labels: .NET, LINQ, LINQ to SQL, VB.NET</p>
-
-<p>The LINQ to SQL <code>DataContext</code> provides excellent functionality for managing a set of local changes to a database that can be pushed to the server with a single call to <code>SubmitChanges()</code>. Inevitably there will be situations where you want to discard the changes you have made, effectively allowing you to continue using the <code>DataContext</code> as though those changes had never been made.  Unfortunately, there is no <code>DataContext.DiscardChanges()</code> method<!--break-->.</p>
+		<p>The LINQ to SQL <code>DataContext</code> provides excellent functionality for managing a set of local changes to a database that can be pushed to the server with a single call to <code>SubmitChanges()</code>. Inevitably there will be situations where you want to discard the changes you have made, effectively allowing you to continue using the <code>DataContext</code> as though those changes had never been made.  Unfortunately, there is no <code>DataContext.DiscardChanges()</code> method<!--break-->.</p>
 
 <p>A little research reveals that this is by design and that you should simply recreate the <code>DataContext</code> in these cases, but of course, nothing is that simple.  Every object you have that came from the original <code>DataContext</code> now needs to be reset to use the new one to guarantee predictable behaviour.  For example, the last line of this snippet will set <code>objectsAreEqual</code> to <strong>False</strong>:</p>
 
@@ -80,5 +77,17 @@ End Sub
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

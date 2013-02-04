@@ -17,10 +17,7 @@
 		<p>2010.091</p>
 	</div>
 	<div class="div_article_content">
-		<p>title: LINQ to SQL Gotcha #6: Delete, Save, Insert, CRASH
-labels: .NET, C,#, LINQ, LINQ to SQL, SQL Server</p>
-
-<p>If you keep the same entity around after it has been deleted and <code>SubmitChanges()</code> is called then you can run into an <code>InvalidOperationException</code> if you try to insert it again<!--break-->.</p>
+		<p>If you keep the same entity around after it has been deleted and <code>SubmitChanges()</code> is called then you can run into an <code>InvalidOperationException</code> if you try to insert it again<!--break-->.</p>
 
 <pre><code>var data = new DataClasses1DataContext();
 var user = new User() { userName = "foo", password = "bar" };
@@ -42,5 +39,17 @@ data.SubmitChanges();
 	</div>
 </div>
 		</div>
+
+		<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-3499720-4']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+		</script>
 	</body>
 </html>

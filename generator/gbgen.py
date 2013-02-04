@@ -257,7 +257,7 @@ def compile_article(article_text, file_name):
         date=filename_parts[0],
         metadata=ArticleMetadata(get_article_header_properties(header_text)),
         short_html=markdown_to_html(short_body),
-        long_html=markdown_to_html(article_text),
+        long_html=markdown_to_html(body_text),
         short_version_is_full_article=len(body_parts) > 1)
 
 def get_categories(articles):
