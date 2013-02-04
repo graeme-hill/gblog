@@ -7,7 +7,7 @@
 
 	<body>
 		<div id="div_header">
-			<h1>Graeme Hill's Dev Blog</h1>
+			<h1><a href="/">Graeme Hill's Dev Blog</a></h1>
 		</div>
 
 		<div id="div_content">
@@ -20,7 +20,7 @@
 		<p>title: Nullable combo boxes in WPF
 labels: .NET, WPF</p>
 
-<p><strong>Update:</strong> Sample source code demonstrating this technique can be downloaded here: <a href="http://graemehill.ca/samples/WpfNullableComboBox.zip"> WpfNullableComboBox.zip</a></p>
+<p><strong>Update:</strong> Sample source code demonstrating this technique can be downloaded here: <a href="/resources/samples/WpfNullableComboBox.zip"> WpfNullableComboBox.zip</a></p>
 
 <p>By default, combo boxes in WPF have some really annoying behaviour.  When the control is initialized, if the <code>SelectedItem</code> is <code>Nothing</code> then the default selection will be blank, but as soon as you choose an item in the combo box, you can not reselect the blank/null option.  One quick way around this is to add a null placeholder object to your <code>ItemsSource</code>.  There are a few problems with this approach though<!--break-->:</p>
 

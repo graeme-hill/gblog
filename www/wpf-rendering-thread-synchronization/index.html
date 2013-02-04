@@ -7,7 +7,7 @@
 
 	<body>
 		<div id="div_header">
-			<h1>Graeme Hill's Dev Blog</h1>
+			<h1><a href="/">Graeme Hill's Dev Blog</a></h1>
 		</div>
 
 		<div id="div_content">
@@ -20,7 +20,7 @@
 		<p>title: WPF rendering thread synchronization
 labels: .NET, VB.NET, WPF</p>
 
-<p><strong>Download the sample project here:</strong> <a href="http://graemehill.ca/samples/WpfRenderingThreadSynchronization.zip">WpfRenderingThreadSynchronization.zip</a></p>
+<p><strong>Download the sample project here:</strong> <a href="/resources/samples/WpfRenderingThreadSynchronization.zip">WpfRenderingThreadSynchronization.zip</a></p>
 
 <p>In most applications it is necessary to offload long running processes to an alternate thread so that the rest of the program does not lock up during that time.  However, it's not so simple when the long running process is the actual rendering.  Separate windows can have their own UI threads (as explained <a href="http://eprystupa.wordpress.com/2008/07/28/running-wpf-application-with-multiple-ui-threads/">here</a>) but to my knowledge there is no way to use multiple rendering threads on a single window<!--break-->.    </p>
 

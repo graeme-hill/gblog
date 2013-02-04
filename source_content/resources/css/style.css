@@ -7,6 +7,11 @@ body {
 	font-size: 0.8em;
 }
 
+#div_header h1 a, #div_header h1 a:hover, #div_header h1 a:active, #div_header h1 a:visited {
+	color: #fff;
+	text-decoration: none;
+}
+
 a, a:hover, a:active, a:visited {
 	color: #00a91c;
 	text-decoration: none;

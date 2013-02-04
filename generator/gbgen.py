@@ -139,7 +139,7 @@ def copy_static_content(source_path, compiled_path):
             shutil.copy(source_file, destination_file)
 
 def label_name_to_slug(label_name):
-    modified = label_name.replace('#', ' sharp ').replace('.', ' dot ')
+    modified = label_name.lower().replace('#', ' sharp ').replace('.', ' dot ')
     return re.sub(WHITESPACE_RE, SLUG_SEP, modified.strip())
 
 def setup_output_dir(compiled_path):
