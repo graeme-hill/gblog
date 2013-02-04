@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>WPF rendering thread synchronization</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/wpf-rendering-thread-synchronization">WPF rendering thread synchronization</a></h1>
+		<p>2009.234</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: WPF rendering thread synchronization
+labels: .NET, VB.NET, WPF</p>
+
+<p><strong>Download the sample project here:</strong> <a href="http://graemehill.ca/samples/WpfRenderingThreadSynchronization.zip">WpfRenderingThreadSynchronization.zip</a></p>
+
+<p>In most applications it is necessary to offload long running processes to an alternate thread so that the rest of the program does not lock up during that time.  However, it's not so simple when the long running process is the actual rendering.  Separate windows can have their own UI threads (as explained <a href="http://eprystupa.wordpress.com/2008/07/28/running-wpf-application-with-multiple-ui-threads/">here</a>) but to my knowledge there is no way to use multiple rendering threads on a single window<!--break-->.    </p>
+
+<p>The second problem is that rendering is done in big chunks.  For example, if you have an ItemsControl that is bound to an ObservableCollection and a loop that adds 1000 items to that collection, you will notice that the elements are not drawn one at a time. Instead the UI will stall for a moment and then every element will suddenly appear on screen.  During the time that it is loading, the entire window will be completely unusable.  Basically, what happens is that UI changes (like adding an element to an ItemsControl's ObservableCollection) all get put into a queue and then the rendering thread deals with a whole bunch of them all at once.</p>
+
+<p>There are two problems with this behaviour:</p>
+
+<ul>
+<li>The rest of the UI is unusable while this loading takes place</li>
+<li>It's not obvious what is happening during the loading period.  Since absolutely nothing is happening on screen, the user might think the app is broken.</li>
+</ul>
+
+<p>It turns out that in cases like this where we have many small rendering operations that add up to a large amount of time, we can force the rendering thread to flush out the Windows message queue after each element is added to the collection.  This will not only allow the user to see progress (ie: items appearing in the ItemsControl one at a time) but between each item being added other UI updates can take place giving the illusion that there are separate UI threads.</p>
+
+<p>The included sample draws 1000 <code>TextBox</code>es inside an <code>ItemsControl</code>, but after each element is added the Windows message queue is flushed out using the <code>FlushWindowsMessageQueue</code> function.  All the functions does is tell the dispatcher to invoke a delegate that does nothing.  The result is that the code blocks at that line until the specified delegate has been run.  But since it is at the end of the queue, everything else has to be dealt with first.  The function looks like this:</p>
+
+<pre><code>Private Sub FlushWindowsMessageQueue()
+    Application.Current.Dispatcher.Invoke( _
+        New Action(AddressOf DummySub), _
+        DispatcherPriority.Background, _
+        New Object() {})
+End Sub
+
+Private Sub DummySub()
+End Sub
+</code></pre>
+
+<p>When the sample is run with the <code>FlushWindowsMessageQueue()</code> line commented out the whole UI will lock up for a couple of seconds after you click "Refresh data".  However, when the message queue is emptied after each element is added the UI never locks up, even when it is still drawing <code>TextBox</code>es.</p>
+
+<p>Unfortunately, there are some drawbacks to this method.  The most obvious is that it makes the entire rendering operation actually take longer.  The trade off is that the first items appear much earlier, but the last items appear later.  The technique also cannot be used when the rendering cannot easily be split into many small chunks.</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

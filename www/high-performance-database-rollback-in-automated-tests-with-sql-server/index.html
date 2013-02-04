@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>High performance database rollback in automated tests with SQL Server</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/high-performance-database-rollback-in-automated-tests-with-sql-server">High performance database rollback in automated tests with SQL Server</a></h1>
+		<p>2010.023</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: High performance database rollback in automated tests with SQL Server
+labels: .NET, Entity Framework, LINQ, LINQ to SQL, SQL Server, Unit Testing, VB.NET</p>
+
+<p>A couple months ago I wrote <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-1-just-hit-the-database">this</a> article explaining why I think it is reasonable for unit tests to hit a real database.  Subsequently, I wrote a <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-2-rolling-back-the-test-database">follow up article</a> describing some techniques for rolling back your database to its original state after each test.  In that article I found that just using simple transactions did not solve the problem because you need access to all database connections being used, and they all have to be rolled back.  I have since found a way around this problem using distributed transactions<!--break-->.</p>
+
+<p>With the <a href="http://en.wikipedia.org/wiki/Distributed_Transaction_Coordinator">Microsoft Distributed Transaction Coordinator</a> (MSDTC) the activity over multiple connections can be lumped into a single transaction using the <code>TransactionScope</code> class.  MSDTC needs to be running for this to work, but since this is just for unit tests it doesn't need to be enabled on your production environment.</p>
+
+<p>In order to use the <code>TransactionScope</code> class your project will need a reference to <code>System.Transactions</code>.  Here's a sample unit test using MSTest and Entity Framework where the database is altered with multiple connections within a transaction and then the changes are rolled back:</p>
+
+<pre><code>Imports System.Transactions
+Imports System
+Imports System.Text
+Imports System.Collections.Generic
+Imports Microsoft.VisualStudio.TestTools.UnitTesting
+
+&lt;TestClass()&gt; _
+Public Class UnitTestSample
+
+    &lt;TestMethod()&gt; _
+    Public Sub ProofOfConceptTest()
+        Using New TransactionScope
+            Dim conn1 As New DataTestEntities
+            Dim conn2 As New DataTestEntities
+
+            Dim row1 As New Users With {.userName = "user1", .password = "pass"}
+            Dim row2 As New Users With {.userName = "user2", .password = "pass"}
+
+            conn1.AddToUsers(row1)
+            conn2.AddToUsers(row2)
+
+            conn1.SaveChanges()
+            conn2.SaveChanges()
+
+            Dim conn3 As New DataTestEntities
+            Assert.AreEqual(conn3.Users.Count, 6)
+        End Using
+    End Sub
+
+End Class
+</code></pre>
+
+<p>Alternatively, if you want every test method inside a test class to be within its own <code>TransactionScope</code> without adding a <code>Using</code> block to every single test, you can use the initialization and cleanup methods like this:</p>
+
+<pre><code>Imports System.Transactions
+Imports System
+Imports System.Text
+Imports System.Collections.Generic
+Imports Microsoft.VisualStudio.TestTools.UnitTesting
+
+&lt;TestClass()&gt; _
+Public Class UnitTestSample
+
+    Private _transaction As TransactionScope
+
+    &lt;TestInitialize()&gt; _
+    Public Sub Setup()
+        _transaction = New TransactionScope
+    End Sub
+
+    &lt;TestCleanup()&gt; _
+    Public Sub TearDown()
+        _transaction.Dispose()
+    End Sub
+
+    &lt;TestMethod()&gt; _
+    Public Sub ProofOfConceptTest()
+        Dim conn1 As New DataTestEntities
+        Dim conn2 As New DataTestEntities
+
+        Dim row1 As New Users With {.userName = "user1", .password = "pass"}
+        Dim row2 As New Users With {.userName = "user2", .password = "pass"}
+
+        conn1.AddToUsers(row1)
+        conn2.AddToUsers(row2)
+
+        conn1.SaveChanges()
+        conn2.SaveChanges()
+
+        Dim conn3 As New DataTestEntities
+        Assert.AreEqual(conn3.Users.Count, 6)
+    End Sub
+
+End Class
+</code></pre>
+
+<p>As long as the use of MSDTC is an option, I have found this method to be far better than any of those described in the <a href="http://graemehill.ca/unit-testing-an-entity-framework-data-access-layer-part-2-rolling-back-the-test-database">last article</a>.  It guarantees that the state or your database is maintained and is extremely fast (at least on small amounts of data).</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

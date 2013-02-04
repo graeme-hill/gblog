@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MultiBindings are NOT useless in MVVM</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/multibindings-are-not-useless-in-mvvm">MultiBindings are NOT useless in MVVM</a></h1>
+		<p>2009.290</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: MultiBindings are NOT useless in MVVM
+labels: .NET, MVVM, WPF</p>
+
+<p>Lately I have been detecting a growing sentiment that any use of MultiBinding is poor practice in MVVM (<a href="http://groups.google.com/group/wpf-disciples/browse_thread/thread/99a59fecec962376?pli=1">this thread</a> on WPF disciples for example).  However, I think people who say you should <em>never</em> use MultiBinding are missing its point.  It is probably better to make a single binding to a FullName property than to multi bind to FirstName and LastName and then convert it into a full name.  But there is still a scenario that demands the use of MultiBinding: <strong>bindings that need to update when more than one UI property changes</strong>.  MultiBindings are not just used for passing more information to the converter, they also specify when the value needs to be updated and call the converter again.  This is a much more important feature and it requires MultiBinding. </p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

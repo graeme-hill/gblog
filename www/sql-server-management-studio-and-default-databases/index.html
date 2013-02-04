@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SQL Server Management Studio and default databases</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/sql-server-management-studio-and-default-databases">SQL Server Management Studio and default databases</a></h1>
+		<p>2010.030</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: SQL Server Management Studio and default databases
+labels: SQL Server</p>
+
+<p>There is a really annoying bug (or at least what I would call a bug) in SQL Server Management Studio where you cannot login with a user whose default database does not exist.  Even if you are already logged in and you rename the default database, you will automatically be logged out and will receive an error every time you try to login again.  You can always login as a different user and change the default database, but if you only have access to the one account, you can change the default database using <code>sqlcmd</code><!--break-->.</p>
+
+<p>First, login with a different database in a command window:</p>
+
+<pre><code>sqlcmd -d master -S server -U username -P password
+</code></pre>
+
+<p>Then issue the following commands to change the default database:</p>
+
+<pre><code>1&gt; ALTER LOGIN login_name WITH DEFAULT_DATABASE = master
+2&gt; GO
+</code></pre>
+
+<p>You should now be able to login with this account through management studio.</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

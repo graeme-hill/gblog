@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Verify your property names in INotifyPropertyChanged implementation</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/verify-your-property-names-in-inotifypropertychanged-implementation">Verify your property names in INotifyPropertyChanged implementation</a></h1>
+		<p>2009.059</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: Verify your property names in INotifyPropertyChanged implementation
+labels: .NET, VB.NET, WPF</p>
+
+<p><strong>Update:</strong> I have posted another article <a href="http://graemehill.ca/easier-propertychanged-notification-with-postsharp">here</a> that explains what I think is a better solution to this problem using a simple PostSharp attribute.</p>
+
+<p>When you raise the <code>PropertyChanged</code> event you have to pass it a property name as a string.  If there is no property with that name then nothing will happen.  The listener will not be notified and no exception will be thrown making the problem very difficult to debug.  You can change this behaviour and make the application fail at runtime by adding a simple check to your helper function for the event<!--break-->:</p>
+
+<pre><code>Public Sub NotifyPropertyChanged(ByVal propertyName As String)
+    ' Throw an exception if the property doesn't exist
+    If Me.GetType().GetProperty(propertyName) Is Nothing Then
+        Throw New InvalidPropertyNameException()
+    End If
+
+    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propertyName))
+End Sub
+</code></pre>
+
+<p>If you put this in a base class for all of your model views (or controllers, or presenters) then you will automatically get this functionality every time, preventing some potentially very annoying bugs.</p>
+
+<p>This still isn't the ultimate solution because you don't find out that the property name doesn't exist until runtime.  Ideally, we would get a compile error when the property does not exist.  What I would like to do is call the function like this:</p>
+
+<pre><code>NotifyPropertyChanged(AddressOf MyProperty)
+</code></pre>
+
+<p>This way you wouldn't have to use a string at all and the compiler would tell you if <code>MyProperty</code> doesn't exist.  Unfortunately, .NET languages only have delegates for functions/subroutines so there is no way to make a strongly typed pointer to a property.  Let's hope they add that in one day, but until then, we'll have to use strings.</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

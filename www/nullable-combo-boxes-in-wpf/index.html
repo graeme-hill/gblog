@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Nullable combo boxes in WPF</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/nullable-combo-boxes-in-wpf">Nullable combo boxes in WPF</a></h1>
+		<p>2009.051</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: Nullable combo boxes in WPF
+labels: .NET, WPF</p>
+
+<p><strong>Update:</strong> Sample source code demonstrating this technique can be downloaded here: <a href="http://graemehill.ca/samples/WpfNullableComboBox.zip"> WpfNullableComboBox.zip</a></p>
+
+<p>By default, combo boxes in WPF have some really annoying behaviour.  When the control is initialized, if the <code>SelectedItem</code> is <code>Nothing</code> then the default selection will be blank, but as soon as you choose an item in the combo box, you can not reselect the blank/null option.  One quick way around this is to add a null placeholder object to your <code>ItemsSource</code>.  There are a few problems with this approach though<!--break-->:</p>
+
+<ol>
+<li>The null placeholder cannot actually be <code>Nothing</code>/<code>null</code> or else selecting the value will have no affect.  Instead, it needs to be some object that represents "null".  This means that if you want your setter on the property bound to the <code>SelectedItem</code> to be set to null, you need to convert the object representing null to actually be <code>Nothing</code>/<code>null</code>.</li>
+<li>Ideally, you should not have to alter the collection in your model view/controller/presenter that is bound to the <code>ItemsSource</code> just to add a null option.  It would be better if we could just specify in XAML that this combo box should have a null option that actually sets the <code>SelectedItem</code> to <code>Nothing</code>.</li>
+</ol>
+
+<p>Since we don't want to alter the collection in the controller and we cannot have a combo box item of <code>Nothing</code> (we need a null place holder object instead) but we don't want the <code>SelectedItem</code> property to ever have the null place holder object as its value (we want it to just be <code>Nothing</code> when that is chosen) we can do one of two things:</p>
+
+<ol>
+<li>Use two converters: one on the <code>ItemsSource</code> to add in the null place holder object and one on <code>SelectedItem</code> to convert the place holder to <code>Nothing</code>.</li>
+<li>Create a user control that acts as a wrapper around the combo box control.  All the necessary logic could be handled within the user control.</li>
+</ol>
+
+<p>Option one would look like this:</p>
+
+<pre><code>&lt;ComboBox
+    ItemsSource="{Binding MyItems, Converter={StaticResource addNullPlaceHolderConverter}}"
+    SelectedItem="{Binding MySelectedItem, Converter={StaticResource placeHolderToNullConverter}}" /&gt;
+</code></pre>
+
+<p>In my opinion, that method really sucks.  You have to add the converters in you resources section and then specify them in two places.  Another issue is that we could run into some major converter explosion if it turns out that you already need some other converter on one of the properties.  Then you have to make a new converter that combines the two.  I don't like it.</p>
+
+<p>Option two looks like this:</p>
+
+<pre><code>&lt;local:NullableComboBox
+    ItemsSource="{Binding MyItems}"
+    SelectedItem="{Binding MySelectedItem}" /&gt;
+</code></pre>
+
+<p>Much better!</p>
+
+<p>The XAML for the user control is extremely simple.  You just need to create a combo box with a name:</p>
+
+<pre><code>&lt;UserControl x:Class="NullableComboBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+    &lt;ComboBox x:Name="combo" /&gt;
+&lt;/UserControl&gt;
+</code></pre>
+
+<p>In the code-behind you need to expose two dependency properties: <code>SelectedItem</code> and <code>ItemsSource</code> so that the control has the same interface as a regular combo box.</p>
+
+<p>By listening to the combo box's <code>SelectionChanged</code> event you can update the <code>SelectedItem</code> property on the <code>NullableComboBox</code> except with the place holder converted to <code>Nothing</code>.</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

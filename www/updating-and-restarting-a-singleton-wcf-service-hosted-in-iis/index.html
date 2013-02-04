@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Updating and restarting a singleton WCF service hosted in IIS</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/updating-and-restarting-a-singleton-wcf-service-hosted-in-iis">Updating and restarting a singleton WCF service hosted in IIS</a></h1>
+		<p>2010.088</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: Updating and restarting a singleton WCF service hosted in IIS
+labels: .NET, IIS, WCF</p>
+
+<p>I recently moved a singleton WCF service to IIS that used to be hosted within a Windows service.  When it was hosted in a Windows service restarting it was easy, you just go to the service manager in Windows and click restart, but to my knowledge there is no direct equivalent for a WCF service running inside IIS.  Since a singleton service continues to run indefinitely once it starts I was afraid that even after publishing an update or changing the web.config the old code would continue to run until I forced a restart somehow.  I didn't want to have to restart IIS every time there is a change to the config file, so I made a test project and ran some experiments.  It turns out that when any change is made to the service (ie: any of the binaries, the svc file, or the web.config are replaced) the service immediately restarts.  This means that all of your existing connections will be terminated and the service class will be recreated.  Unlike a Windows service you don't have to manually force a restart when you publish an update.  The bad news is that I still don't know of a way to simply restart the service without making any changes.  Aside from restarting IIS (which is obviously a terrible solution) the only way I know is to make some random negligible change to the config file (like changing a comment or maybe even just whitespace).  I guess that in theory singleton services are not meant to be restarted, but you're bound to want to do it at some point.</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

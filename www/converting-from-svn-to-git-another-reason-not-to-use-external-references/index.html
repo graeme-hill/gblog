@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Converting from svn to git: another reason not to use external references</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/converting-from-svn-to-git-another-reason-not-to-use-external-references">Converting from svn to git: another reason not to use external references</a></h1>
+		<p>2010.307</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: Converting from svn to git: another reason not to use external references
+labels: Git, SVN</p>
+
+<p>Usually it is easy to import a subversion repository into git.  You just do this<!--break-->:</p>
+
+<pre><code>mkdir my_project
+cd my_project
+git svn init svn://repo.url/goes/here
+git svn fetch
+</code></pre>
+
+<p>This will always fetch the repository you specified, but sometimes in svn your project actually depends on multiple repositories (ie: you use external references).  The external reference will not be fetched and you will have to manually add it in somehow.</p>
+
+<p>Did you really think it would be that easy?</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>

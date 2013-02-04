@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Are you sure you want List?  Maybe you really want HashSet</title>
+		<link rel="stylesheet" type="text/css" href="/resources/css/style.css">
+	</head>
+
+	<body>
+		<div id="div_header">
+			<h1>Graeme Hill's Dev Blog</h1>
+		</div>
+
+		<div id="div_content">
+			<div class="div_article">
+	<div class="div_article_header">
+		<h1><a href="/are-you-sure-you-want-list-maybe-you-really-want-hashset">Are you sure you want List?  Maybe you really want HashSet</a></h1>
+		<p>2011.037</p>
+	</div>
+	<div class="div_article_content">
+		<p>title: Are you sure you want List?  Maybe you really want HashSet
+labels: .NET, C#, VB.NET</p>
+
+<p>I often find that I get so used to using <code>List&lt;T&gt;</code> for my collections that I forget to consider whether it is really the right tool for the job.  If the collection is not ordered, and you don't want duplicates then there are a lot of benefits to using <code>HashSet&lt;T&gt;</code>.  For example with <code>List&lt;T&gt;</code> you'll find yourself writing code like this:<!--break--></p>
+
+<pre><code>if (!myCollection.Contains(newString))
+{
+    myCollection.Add(newString);
+}
+</code></pre>
+
+<p>This is a little verbose and it's also inefficient.  Every time you call <code>Contains()</code> the entire collection has to be scanned.  With a <code>HashSet&lt;T&gt;</code> set operations are optimized and the code is simpler:</p>
+
+<pre><code>myHashSet.Add(newString);
+</code></pre>
+
+<p>The other benefit is that you actually enforce the no duplicate rule since adding the same element more than once will have no effect.  Here's what the MSDN documentation says about <code>HashSet&lt;T&gt;</code>:</p>
+
+<blockquote>
+  <p>The HashSet(Of T) class provides high-performance set operations. A set is a collection that contains no duplicate elements, and whose elements are in no particular order.</p>
+</blockquote>
+
+<p>In practice I am finding that there are actually a lot of scenarios when I really want a set and not a list.  So the next time you create a collection, think about whether you can use a <code><a href="http://msdn.microsoft.com/en-us/library/bb359438.aspx">HashSet</a></code>.</p>
+
+	</div>
+</div>
+		</div>
+	</body>
+</html>
