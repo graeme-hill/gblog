@@ -1,1 +1,1 @@
-python ./generator/gbgen.py
+python3 ./generator/gbgen.py
