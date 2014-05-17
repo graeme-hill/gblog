@@ -197,6 +197,7 @@ def write_article_page(article, compiled_path, templates):
     os.makedirs(file_dir)
     article_html = render_template(templates[ARTICLE_TEMPLATE_NAME], { 
         'title': article.metadata.title, 
+        'slug': article.slug,
         'content': article.long_html, 
         'date': article.date,
         'article_url': absolute_url(article.slug) })
