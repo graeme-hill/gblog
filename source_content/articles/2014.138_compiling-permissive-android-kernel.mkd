@@ -1,0 +1,171 @@
+title: Compiling a permissive Android kernel
+labels: Android, Linux
+
+#### Disclaimer
+
+Flashing custom kernels can break your device. If something goes wrong it's not my fault. I guarantee nothing.
+
+#### Environment
+
+I prefer to flash kernels, roms, recoveries etc. with Odin, but I'm sure that if you know what you're doing you can
+use other methods. My setup is that I have the android devices plugged into a Windows desktop, and then I'm running a
+Linux virtual machine where I do the actual work. I use VirtualBox with a shared directory so they can easily access the
+same files. Generally when I say to run a command or something I mean on the Linux VM, but any reference to Odin or
+Kies assumes it is running on Windows.
+
+#### Summary
+
+As part of my effort to turn a [Galaxy Note Pro into a Linux laptop](/turning-a-galaxy-note-pro-into-a-linux-laptop)
+I compiled a custom kernel that allows SELinux (or SE for Android as it is called in the device settings) mode to be
+changed to permissive. In the interest of making the minimum possible changes I did not completely disable SELinux or
+change the default mode. Instead I just disabled the flag that stops you from switching between enforcing and
+permissive modes. In Android 4.4 Google started using enforcing mode which actually *enforces* the SELinux policy
+(ie: if you do something that the policy does not want you to do you get a permission error even if you are root
+user) instead of permissive. In permissive mode you can violate the SELinux policy all you want and the system just
+writes logs instead of giving permission errors. Samsung's recent devices build upon that with some of their own security
+features, including a flag that makes it so you cannot switch the SELinux policy without rebuilding the kernel. There
+is a command called `setenforce` which toggles modes, and there are some apps on the Google Play store which do the
+same thing, but none of them will work until we modify the kernel.
+
+This process has specifically been done on a Galaxy Note Pro SM-P900 but it may work on other devices as well, or should
+at least be informative.
+
+#### Getting the source code
+
+Since the Linux kernel is GPL software, Samsung legally has to release the kernel source to their devices. That means
+you can simply go to [opensource.samsung.com](http://opensource.samsung.com) and search for "SM-P900" and then choose
+your specific device version. Even though Linux kernels aren't very big the download will be gigantic because it inclues
+a lot more in it than just the kernel. While you're waiting for the download you can move on to the next step.
+
+#### Setting up the build environment
+
+##### Get the Android NDK
+
+Since you are probably on an x86 environment but compiling for ARM you need a cross compiler. The easiest way to set that
+up is to download the [Android NDK](https://developer.android.com/tools/sdk/ndk/index.html) which exists precisely for
+this purpose. On my system, I extracted the ndk to `~/android/ndk`.
+
+##### Extract kernel source
+
+Once your download from opensource.samsung.com is complete, you can extract the kernel directory to `~/android/kernel`.
+There should also be a file called `README_Kernel.txt`. I recommend you also copy that to `~/android` as it has some
+concise and useful info in it.
+
+#### Tweak the SELinux Makefile
+
+Open up `~/android/kernel/security/selinux/Makefile` and you will see a line near the top that looks like this:
+
+    EXTRA_CFLAGS += -DCONFIG_ALWAYS_ENFORCE=true
+
+All you have to do is change `true` to `false`.
+
+#### Compile
+
+##### Setup cross compiler
+
+We got a cross compiler when we extracted the NDK, we just need to specify precisely where it is before we compile. To
+do that we need to create an environment variable called `CROSS_COMPILE`.
+
+    export CROSS_COMPILE=~/android/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-
+
+Notice that the path just ends part way through a file name. This is intentional. `CROSS_COMPILE` should indicate the
+prefix of a group of files in that directory.
+
+##### Apply kernel config
+
+There are about a hundred billion settings that you can choose from when building a linux kernel, so Samsung provides
+the exact config that you need to use so that the kernel will work on your device. To apply the config run this command:
+
+   cd ~/android/kernel
+   make ARCH=arm v1awifi\_00\_defconfig
+
+This should create a file called `.config`. For our purposes we don't need to change this file, but if you do have some
+tweaks you want to make then you can edit `.config` directly, but there is a better way. Normally you want to edit it
+by running `make menuconfig`. Menuconfig requires that you have libncurses in addition to standard build tools. If you
+are doing this on a different device then `v1awifi_00_defconfig` probably does not exist. This is just the name of a
+template config file stored in `arch/arm/configs` so you can always check in that directory.
+
+##### Make
+
+Now you're ready to actually compile. Just run this command from `~/android/kernel`:
+
+    make ARCH=arm -jN
+
+Replace the `N` in the `-jN` with the number of processors you have plus one. For example, if you have 4 cores then enter 5.
+I'm not really sure if it's better to consider hyperthreaded cores as 1 or 2. I'll leave that for you to experiment,
+it only affects performance. If it succeeds then the last line of the output should look like:
+
+    Kernel: arch/arm/boot/zImage is ready
+
+If you did not get an error, but you don't see that message it likely means that you actually did get an error but since
+there were parallel build processes the error wound up somewhere further up on the screen. You can just scroll up or
+rebuild with `-j1`.
+
+##### Creating boot.img
+
+The `zImage` file is your kernel blob, but you can't just directly flash that with odin. The boot partition actually
+expects two things: a kernel zImage, and a ramdisk that is used to initialize the system. Instead of making our own
+ramdisk it is much easier to extract the one that already exists in the stock boot.img. To do this we're going to need
+the tools to pack/unpack boot.img files, and we're need the stock boot.img.
+
+###### Obtaining umkbootimg and mkbootimg
+
+CNexus generously posted a zip file on xda-developers in
+[this thread](http://forum.xda-developers.com/showthread.php?t=2319018) called `bootimg_tools_7.8.13.zip`. You can
+simply extract those files to `~/bin` (assuming `~/bin` is in your path).
+
+###### Getting a stock boot.img (option 1)
+
+If you already have a stock rom for your device you can usually just open the archive and there will be a file called
+boot.img. If you don't have one you can try telling Kies to install an emergency recovery and it will download the stock
+rom to your `%temp%` directory, then decrypt it as a ~2GB zip file in the same directory. If you quickly copy that zip
+file to any other directory before Kies deletes it then you can open it up and grab the boot.img.
+
+###### Getting a stock boot.img (option 2)
+
+If you don't have access to a stock rom, then you can just extract the boot.img from your device. The trick is finding
+out where to get it. On my device I new that I had to be one of the block devices in `/dev/block/mmcblk0p*` so I just
+wrote a script to try every single one of them until the data looked right. It turns out the on my version of the
+SM-P900 it is `/dev/block/mmcblk0p9` so I was able to extract it to my SD card by running this command locally on the
+device as the super user:
+
+    dd if=/dev/block/mmcblk0p9 of=/sdcard/stock_boot.img
+
+###### Make the new image
+
+Once you have gotten the stock boot.img off your device, you can copy it to `~/android/stock/boot.img`. Then run the
+following commands:
+
+    cd ~/android/stock
+    umkbootimg boot.img
+    mkdir ~/android/custom
+    cd ~/android/custom
+    cp ../stock/initramfs.cpio.gz .
+    cp ~/android/kernel/arch/arm/boot/zImage .
+    mkbootimg --kernel zImage --ramdisk initramfs.cpio.gz --output boot.img
+    tar -cf my_custom_kernel.tar boot.img
+
+That last command creates the tar file that you can flash with Odin.
+
+#### Flashing the kernel
+
+If you use Odin (I had success with Odin 3.07 on SM-P900) then do the following:
+
+* Reboot your device in download mode. On the SM-P900 you turn off the device then hold power + volumn down until a
+message pops up on the screen then release and hit volumn up. Most guides say that you need to hold down the home
+button as well but that does not seem to be necessary and makes it much more physically awkward.
+* Launch Odin in Windows (I used version 3.07 successfully).
+* Plugin the device into your computer if it isn't already. In the message pane it should say "Added!!".
+* Click the PDA button in Odin (it's called AP in version 3.09+) and choose `my\_custom\_kernel.tar`.
+* Click "Start" and cross your fingers.
+
+If all went well the device should restart. If you go to Settings -> About Device then the kernel version section you
+should see your\_username@your\_linux\_computer\_name which indicates that the custom kernel has been applied. Below
+that there is a section that says "SE for Android status" which should stil say "Enforcing". Now just open a terminal
+and run the following:
+
+    su
+    setenforce 0
+
+Now go back to settings and navigate away from "About Device" and back again to force it to refresh and it should now
+say "Permissive". Horay!
