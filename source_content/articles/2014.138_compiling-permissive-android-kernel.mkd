@@ -3,15 +3,18 @@ labels: Android, Linux
 
 #### Disclaimer
 
-Flashing custom kernels can break your device. If something goes wrong it's not my fault. I guarantee nothing.
+Flashing custom kernels can break your device. If something goes wrong it's not my fault. I guarantee nothing. Also note
+that this will likely trips warranty flags like the Knox feature that detects when you have flashed any custom images.
 
 #### Environment
 
 I prefer to flash kernels, roms, recoveries etc. with Odin, but I'm sure that if you know what you're doing you can
-use other methods. My setup is that I have the android devices plugged into a Windows desktop, and then I'm running a
+use other methods. My setup is that I have the android device plugged into a Windows desktop, and then I run a
 Linux virtual machine where I do the actual work. I use VirtualBox with a shared directory so they can easily access the
 same files. Generally when I say to run a command or something I mean on the Linux VM, but any reference to Odin or
 Kies assumes it is running on Windows.
+
+I am assuming that your android device is already rooted.
 
 #### Summary
 
@@ -76,8 +79,8 @@ prefix of a group of files in that directory.
 There are about a hundred billion settings that you can choose from when building a linux kernel, so Samsung provides
 the exact config that you need to use so that the kernel will work on your device. To apply the config run this command:
 
-   cd ~/android/kernel
-   make ARCH=arm v1awifi\_00\_defconfig
+    cd ~/android/kernel
+    make ARCH=arm v1awifi_00_defconfig
 
 This should create a file called `.config`. For our purposes we don't need to change this file, but if you do have some
 tweaks you want to make then you can edit `.config` directly, but there is a better way. Normally you want to edit it
@@ -91,7 +94,7 @@ Now you're ready to actually compile. Just run this command from `~/android/kern
 
     make ARCH=arm -jN
 
-Replace the `N` in the `-jN` with the number of processors you have plus one. For example, if you have 4 cores then enter 5.
+Replace the `N` in `-jN` with the number of processors you have plus one. For example, if you have 4 cores then enter 5.
 I'm not really sure if it's better to consider hyperthreaded cores as 1 or 2. I'll leave that for you to experiment,
 it only affects performance. If it succeeds then the last line of the output should look like:
 
@@ -103,10 +106,10 @@ rebuild with `-j1`.
 
 ##### Creating boot.img
 
-The `zImage` file is your kernel blob, but you can't just directly flash that with odin. The boot partition actually
+The `zImage` file is your kernel blob, but you can't just directly flash that do your device. The boot partition actually
 expects two things: a kernel zImage, and a ramdisk that is used to initialize the system. Instead of making our own
 ramdisk it is much easier to extract the one that already exists in the stock boot.img. To do this we're going to need
-the tools to pack/unpack boot.img files, and we're need the stock boot.img.
+the tools to pack/unpack boot.img files, and we'll need the stock boot.img.
 
 ###### Obtaining umkbootimg and mkbootimg
 
@@ -127,7 +130,7 @@ If you don't have access to a stock rom, then you can just extract the boot.img 
 out where to get it. On my device I new that I had to be one of the block devices in `/dev/block/mmcblk0p*` so I just
 wrote a script to try every single one of them until the data looked right. It turns out the on my version of the
 SM-P900 it is `/dev/block/mmcblk0p9` so I was able to extract it to my SD card by running this command locally on the
-device as the super user:
+tablet as the root user:
 
     dd if=/dev/block/mmcblk0p9 of=/sdcard/stock_boot.img
 
@@ -149,12 +152,12 @@ That last command creates the tar file that you can flash with Odin.
 
 #### Flashing the kernel
 
-If you use Odin (I had success with Odin 3.07 on SM-P900) then do the following:
+If you use Odin (I had success with Odin 3.07 my SM-P900) then do the following:
 
 * Reboot your device in download mode. On the SM-P900 you turn off the device then hold power + volumn down until a
 message pops up on the screen then release and hit volumn up. Most guides say that you need to hold down the home
 button as well but that does not seem to be necessary and makes it much more physically awkward.
-* Launch Odin in Windows (I used version 3.07 successfully).
+* Launch Odin in Windows. 
 * Plugin the device into your computer if it isn't already. In the message pane it should say "Added!!".
 * Click the PDA button in Odin (it's called AP in version 3.09+) and choose `my\_custom\_kernel.tar`.
 * Click "Start" and cross your fingers.
@@ -162,10 +165,10 @@ button as well but that does not seem to be necessary and makes it much more phy
 If all went well the device should restart. If you go to Settings -> About Device then the kernel version section you
 should see your\_username@your\_linux\_computer\_name which indicates that the custom kernel has been applied. Below
 that there is a section that says "SE for Android status" which should stil say "Enforcing". Now just open a terminal
-and run the following:
+(I use JuiceSSH) and run the following:
 
     su
     setenforce 0
 
-Now go back to settings and navigate away from "About Device" and back again to force it to refresh and it should now
+Go back to settings and navigate away from "About Device" and back again to force it to refresh and it should now
 say "Permissive". Horay!
