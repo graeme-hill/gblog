@@ -1,4 +1,4 @@
-import markdown2, os, re, shutil, datetime, calendar, sys, PyRSS2Gen, html.parser
+import markdown2, os, re, shutil, datetime, calendar, sys, PyRSS2Gen, html.parser, codecs
 
 # configuration section
 MAIN_TITLE = 'Graeme Hill\'s Dev Blog'
@@ -6,7 +6,7 @@ RSS_TITLE = MAIN_TITLE
 RSS_DESCRIPTION = 'My random thoughts on software development'
 HOME_URL = 'http://graemehill.ca'
 DEFAULT_SOURCE_CONTENT_PATH = 'source_content'
-DEFAULT_COMPILED_CONTENT_PATH = 'www'
+DEFAULT_COMPILED_CONTENT_PATH = 'stage'
 ARTICLES_REL_PATH = 'articles'
 TEMPLATES_REL_PATH = 'templates'
 CATEGORY_REL_PATH = 'category'
@@ -68,6 +68,9 @@ class Category:
         self.label = label
         self.articles = articles
 
+def utf8_open(file_name, read_or_write):
+    return codecs.open(file_name, read_or_write, 'utf-8')
+
 def create_rss_item(article):
     url = urlify(HOME_URL, absolute_url(article.slug))
     return PyRSS2Gen.RSSItem(
@@ -90,7 +93,7 @@ def write_rss_feed(compiled_path, rss):
     feed_path = pathify(feed_dir, FEED_FILE_NAME)
     if not os.path.exists(feed_dir):
         os.makedirs(feed_dir)
-    with open(feed_path, 'w') as f:
+    with utf8_open(feed_path, 'w') as f:
         rss.write_xml(f)
 
 def get_month_day_offset(month, year):
@@ -171,15 +174,15 @@ def urlify(*parts):
     return '/'.join([s.strip('/') for s in parts])
 
 def write_text(file_path, text):
-    with open(file_path, 'w') as f:
+    with utf8_open(file_path, 'w') as f:
         f.write(text)
 
 def read_text(file_path):
-    with open(file_path, 'r') as f:
+    with utf8_open(file_path, 'r') as f:
         return f.read()
 
 def write_article_stub(file_path):
-    with open(file_path, 'w') as f:
+    with utf8_open(file_path, 'w') as f:
         f.write('title:\nlabels:\n\nto do: put article here')
 
 def render_template(template_text, data):
