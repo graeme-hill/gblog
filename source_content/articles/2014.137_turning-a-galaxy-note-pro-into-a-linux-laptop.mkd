@@ -75,7 +75,9 @@ at least allows you to change it to permissive.
 
 If you're using the North American version of the SM-P900 (wifi version) then you can download the kernel that I already
 compiled [here](/resources/android/SM-P900_NA_KernelWithToggleableSELinux.tar). If you are using a different hardware
-version then you'll have to compile the kernel yourself. I plan to post a guide on how to do that shortly.
+version then you'll have to compile the kernel yourself. I wrote
+[this article](/compiling-a-permissive-android-kernel) describing my process which would likely work for other versions
+of the device (or possibly entirely different Samsung devices). The tar file I linked can be flashed with Odin (I used version 3.07).
 
 The only problem with this kernel is that it seems to have some screwy effects on wifi. I found that on reboot
 it would not reconnect automatically, it was very slow to establish a connection, and if I tried to switch from

@@ -172,3 +172,13 @@ that there is a section that says "SE for Android status" which should stil say 
 
 Go back to settings and navigate away from "About Device" and back again to force it to refresh and it should now
 say "Permissive". Horay!
+
+#### Wifi
+
+I noticed that on my device any time I flash a custom compiled kernel (even if I make no changes to the source or
+configuration) the wifi gets a little screwy. After a lot of searching I found that this happens on some other Samsung
+devices as well. The problem was not supoer obvious at first as the wifi seemed to work, but it takes way longer to
+connect, it doesn't remember any passwords when your reboot the device, and when you try to switch between networks it
+sometimes stops working entirely until you restore the stock kernel. Luckily, it doesn't seem to be an actual driver
+issue but something related to their secure password storage functionality. If you simply open up `/system/build.prop`
+and change `ro.securestore.support` from `true` to `false` everything seems to function fine after a reboot.
