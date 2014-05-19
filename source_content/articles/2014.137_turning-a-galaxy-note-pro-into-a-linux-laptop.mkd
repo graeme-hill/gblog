@@ -83,9 +83,15 @@ The only problem with this kernel is that it seems to have some screwy effects o
 it would not reconnect automatically, it was very slow to establish a connection, and if I tried to switch from
 one wifi network to another it would just stop working entirely. It seems that this is not actually a wifi driver
 issue (thank god) but actually some problem related to secure storage of wifi credentials. If you simply open up
-/system/build.prop and change `ro.securestorage.support` from `true` to `false` and then reboot it seems to work
+`/system/build.prop` and change `ro.securestorage.support` from `true` to `false` and then reboot it seems to work
 normally. I know that some Samsung devices have issues with external storage on custom kernels but I have not tested
-that at all.
+that at all. On my device `/system` is mounted in readonly mode so I had to remount it first:
+
+    su
+    mount -o remount,rw /system
+    vi /system/build.prop # <-- or whatever is your preferred method of editing text files
+
+Next time you reboot `/system` will be back to readonly mode.
 
 #### Step 3: Fix keyboard issues
 
