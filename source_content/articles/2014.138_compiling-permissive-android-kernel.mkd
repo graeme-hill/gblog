@@ -127,7 +127,7 @@ file to any other directory before Kies deletes it then you can open it up and g
 ###### Getting a stock boot.img (option 2)
 
 If you don't have access to a stock rom, then you can just extract the boot.img from your device. The trick is finding
-out where to get it. On my device I new that I had to be one of the block devices in `/dev/block/mmcblk0p*` so I just
+out where to get it. On my device I new that it had to be one of the block devices in `/dev/block/mmcblk0p*` so I just
 wrote a script to try every single one of them until the data looked right. It turns out the on my version of the
 SM-P900 it is `/dev/block/mmcblk0p9` so I was able to extract it to my SD card by running this command locally on the
 tablet as the root user:
@@ -159,7 +159,7 @@ message pops up on the screen then release and hit volumn up. Most guides say th
 button as well but that does not seem to be necessary and makes it much more physically awkward.
 * Launch Odin in Windows. 
 * Plugin the device into your computer if it isn't already. In the message pane it should say "Added!!".
-* Click the PDA button in Odin (it's called AP in version 3.09+) and choose `my\_custom\_kernel.tar`.
+* Click the PDA button in Odin (it's called AP in version 3.09+) and choose `my_custom_kernel.tar`.
 * Click "Start" and cross your fingers.
 
 If all went well the device should restart. If you go to Settings -> About Device then the kernel version section you
@@ -177,7 +177,7 @@ say "Permissive". Horay!
 
 I noticed that on my device any time I flash a custom compiled kernel (even if I make no changes to the source or
 configuration) the wifi gets a little screwy. After a lot of searching I found that this happens on some other Samsung
-devices as well. The problem was not supoer obvious at first as the wifi seemed to work, but it takes way longer to
+devices as well. The problem was not super obvious at first as the wifi seemed to work, but it takes way longer to
 connect, it doesn't remember any passwords when your reboot the device, and when you try to switch between networks it
 sometimes stops working entirely until you restore the stock kernel. Luckily, it doesn't seem to be an actual driver
 issue but something related to their secure password storage functionality. If you simply open up `/system/build.prop`
