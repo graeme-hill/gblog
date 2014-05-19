@@ -30,14 +30,13 @@ features, including a flag that makes it so you cannot switch the SELinux policy
 is a command called `setenforce` which toggles modes, and there are some apps on the Google Play store which do the
 same thing, but none of them will work until we modify the kernel.
 
-This process has specifically been done on a Galaxy Note Pro SM-P900 but it may work on other devices as well, or should
-at least be informative.
+This process has specifically been done on a Galaxy Note Pro SM-P900 but it may work on other devices as well.
 
 #### Getting the source code
 
 Since the Linux kernel is GPL software, Samsung legally has to release the kernel source to their devices. That means
 you can simply go to [opensource.samsung.com](http://opensource.samsung.com) and search for "SM-P900" and then choose
-your specific device version. Even though Linux kernels aren't very big the download will be gigantic because it inclues
+your specific device version. Even though Linux kernels aren't very big the download will be gigantic because it includes
 a lot more in it than just the kernel. While you're waiting for the download you can move on to the next step.
 
 #### Setting up the build environment
@@ -72,7 +71,8 @@ do that we need to create an environment variable called `CROSS_COMPILE`.
     export CROSS_COMPILE=~/android/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/arm-linux-androideabi-
 
 Notice that the path just ends part way through a file name. This is intentional. `CROSS_COMPILE` should indicate the
-prefix of a group of files in that directory.
+prefix of a group of files in that directory. There are other versions of arm-linux-androideabi-\* but from my tests
+4.6 is the only one that works. Not suprisingly, the forementioned README says to use 4.6. That's why you should RTFM.
 
 ##### Apply kernel config
 

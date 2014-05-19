@@ -21,7 +21,7 @@ Then the generated SQL looks like:
 Instead of parameterizing the name in the where clause it just directly embedded a string literal. This isn't a security
 concern since I'm sure the inputs are sanitized but it *is* a performance concern. There is often great benefit in
 parameterized queries because SQL Server knows that two queries which differ only in ther parameter values can use the
-same query plan and it allows you to take advantage of a lot of optimization. Often the first query will be much slower
+same query plan and it allows you to take advantage of a lot of optimizations. Often the first query will be much slower
 than all subsequent queries which use the same query plan, so if every value of the name parameter needs its own query
 plan then they are all going to get first execution overhead.
 
