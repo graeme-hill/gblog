@@ -4,10 +4,10 @@ labels: Linux, Android
 #### Disclaimer
 
 Parts of this guide include rooting your device, flashing custom kernels, and changing config files that require root
-access. Any of these things could break your device. I ACCEPT RESPONSIBILITY FOR NOTHING. If you want to actually follow
-my process then do so at your own risk. Also note that in order to get some things to work I had to disable some security
-features that are there to protect you (ie: secure password storage was disabled and SELinux mode is changed to 
-permissive).
+access. Any of these things could break your device and/or void the warranty. I ACCEPT RESPONSIBILITY FOR NOTHING. If 
+you want to actually follow my process then do so at your own risk. Also note that in order to get some things to work
+I had to disable some security features that are there to protect you (ie: secure password storage was disabled and 
+SELinux mode is changed to permissive).
 
 #### Motivation
 

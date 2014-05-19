@@ -20,7 +20,7 @@ Then the generated SQL looks like:
 
 Instead of parameterizing the name in the where clause it just directly embedded a string literal. This isn't a security
 concern since I'm sure the inputs are sanitized but it *is* a performance concern. There is often great benefit in
-parameterized queries because SQL Server knows that two queries which differ only in ther parameter values can use the
+parameterized queries because SQL Server knows that two queries which differ only in their parameter values can use the
 same query plan and it allows you to take advantage of a lot of optimizations. Often the first query will be much slower
 than all subsequent queries which use the same query plan, so if every value of the name parameter needs its own query
 plan then they are all going to get first execution overhead.
@@ -37,7 +37,7 @@ The next question is **what's the difference between using a variable and direct
 
 The difference is in the syntax tree that gets generated. The AST (abstract syntax tree) will store a variable or a
 constant depending on the syntax you use. This makes sense and is actually a good feature, but the problem is that it's
-quite unusual in C# code for it to make functional difference whether you declare a variable in a separate line or just
+quite unusual in C# code for it to make a functional difference whether you declare a variable in a separate line or just
 directly use the literal. There is a high degree of programmer surprise here.
 
 And finally, **what difference does it make to the Entity Framework SQL generator?**
@@ -60,7 +60,7 @@ like this:
     var filter = Expression.Lambda(equal, param);
 
 Creating queries like this is pretty common when the query needs to be dynamically generated based on user input like
-if you have an API with a syntax that let's the caller create an arbitrary filter (eg: OData). If you want a dynamically
+if you have an API with a syntax that allows the caller to create an arbitrary filter (eg: OData). If you want a dynamically
 generated query to NOT use a constant then you are a little bit screwed. Here's a thread on StackOverflow that illustrates
 the problem:
 
@@ -70,7 +70,7 @@ As Jon Skeet explains, their is some compiler magic involved in generating an ex
 even though the expression may be evaluated in some other scope. This is part of the newish closure functionality in .NET
 and is very cool, but sadly doesn't help us when the expression is dynamically generated unless you want to do some custom
 IL generation at runtime or invent a workaround like using a pool of global variables or something hacky like that (I
-tested and it does actually work with global variables, but that doesn't count as a solution IMO).
+tested and it does actually work with global variables, but that doesn't count as a solution).
 
 When it comes down to it, I don't actually want to change the expression at all. I think the expression is correct and it's
 actually the SQL generation in Entity Framework that is wrong.
