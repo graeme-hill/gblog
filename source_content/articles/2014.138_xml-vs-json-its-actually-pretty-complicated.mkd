@@ -106,7 +106,7 @@ can have text formatting.
             <lastName>Albertson</lastName>
             <bio>
                 Albert is some guy with a very similar first and last name.
-                His web page can be found <link url="http://albert.com">here</a>.
+                His web page can be found <a href="http://albert.com">here</a>.
             </bio>
         </person>
     </people>
@@ -122,7 +122,7 @@ in pure JSON, but it's common use a hybrid approach.
         {
             "firstName": "Albert",
             "lastName": "Albertson",
-            "bio": "Albert is some guy with a very similar first and last name. His web page can be found <link url=\"http://albert.com\">."
+            "bio": "Albert is some guy with a very similar first and last name. His web page can be found <a href=\"http://albert.com\">."
         }
     ]
 
