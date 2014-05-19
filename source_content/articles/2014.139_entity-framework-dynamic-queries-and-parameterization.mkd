@@ -1,0 +1,76 @@
+title: Entity Framework dynamic queries and parameterization
+labels: LINQ, Entity Framework, SQL
+
+Here's an interesting quirk in Entity Framework 6's SQL generation. If we write some C# like this:
+
+    var name = "foo";
+    var query = myData.Query<Person>().Where(p => p.Name == name);
+
+Then the generated SQL will essentially looks like this (I simplified it a bit):
+
+    SELECT [name], [email] FROM People WHERE [name]=@p__linq__0
+
+The parameter `@p__linq__0` will be set to `"foo"`. However if I instead write the C# part like this:
+
+    var query = myData.Query<Person>().Where(p => p.Name == "foo");
+
+Then the generated SQL looks like:
+
+    SELECT [name], [email] FROM People WHERE [name]='foo'
+
+Instead of parameterizing the name in the where clause it just directly embedded a string literal. This isn't a security
+concern since I'm sure the inputs are sanitized but it *is* a performance concern. There is often great benefit in
+parameterized queries because SQL Server knows that two queries which differ only in ther parameter values can use the
+same query plan and it allows you to take advantage of a lot of optimization. Often the first query will be much slower
+than all subsequent queries which use the same query plan, so if every value of the name parameter needs its own query
+plan then they are all going to get first execution overhead.
+
+The first question is **how does it even know the difference?**
+
+The answer is that the function `Querable.Where()` does not take a parameter of `Func<T, bool>`. Instead its parameter
+is type `Expression<Func<T, bool>>` which means that you are literally giving it a syntax tree that it can inspect and
+optionally compile to a `Func<T, bool>`. The Entity Framework provider for SQL Server will inspect that expression and
+convert it to SQL instead of compiling it as a C# function because it doesn't want to execute the function as part of the
+C# program running in local memory, it wants to execute it on the database server as part of the SQL query.
+
+The next question is **what's the difference between using a variable and directly using a string literal?**
+
+The difference is in the syntax tree that gets generated. The AST (abstract syntax tree) will store a variable or a
+constant depending on the syntax you use. This makes sense and is actually a good feature, but the problem is that it's
+quite unusual in C# code for it to make functional difference whether you declare a variable in a separate line or just
+directly use the literal. There is a high degree of programmer surprise here.
+
+And finally, **what difference does it make to the Entity Framework SQL generator?**
+
+Well, if your AST says to use a constant then the generated SQL uses a constant. If your AST says to use a variable then
+the generated SQL uses a variable which results in a parameterized query. Seems pretty logical at first glance but I
+would still classify this as a bug. Just because you phrased something as a constant in C# doesn't necessarily mean that
+you want it to also be a constant in SQL. There is unlikely to be a downside to parameterizing the query, but it is very
+likely that there will be a downside to NOT parameterizing it (especially if it's a complex query).
+
+There's a very easy workaround for static queries that are known at compile time, simply put the value in a variable and
+you don't have to worry. It gets a little trickier with dynamically generated queries though. Take a look at an example
+like this:
+
+    // this code is the same as: filter = (p) => p.Name == "name";
+    var expectedName = Expression.Constant("name");
+    var param = Expression.Parameter(typeof(Person));
+    var namePropery = Expression.Property(param, typeof(Person).GetProperty("Name"));
+    var equal = Expression.Equal(nameProperty, expectedName);
+    var filter = Expression.Lambda(equal, param);
+
+Creating queries like this is pretty common when the query needs to be dynamically generated based on user input like
+if you have an API with a syntax that let's the caller create an arbitrary filter (eg: OData). If you want a dynamically
+generated query to NOT use a constant then you are a little bit screwed. Here's a thread on StackOverflow that illustrates
+the problem:
+
+[http://stackoverflow.com/questions/7220626/local-variable-and-expression-trees](http://stackoverflow.com/questions/7220626/local-variable-and-expression-trees)
+
+As Jon Skeet explains, their is some compiler magic involved in generating an expression that can access a local variable
+even though the expression may be evaluated in some other scope. This is part of the newish closure functionality in .NET
+and is very cool, but sadly doesn't help us when the expression is dynamically generated unless you want to do some custom
+IL generation at runtime or invent a workaround like using a pool of global variables or something hacky like that (I
+tested and it does actually work with global variables, but that doesn't count as a solution IMO).
+
+When it comes down to it, I don't actually want to change the expression at all. I think the expression is correct and it's
+actually the SQL generation in Entity Framework that is wrong.
