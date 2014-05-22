@@ -127,7 +127,7 @@ file to any other directory before Kies deletes it then you can open it up and g
 ###### Getting a stock boot.img (option 2)
 
 If you don't have access to a stock rom, then you can just extract the boot.img from your device. The trick is finding
-out where to get it. On my device I new that it had to be one of the block devices in `/dev/block/mmcblk0p*` so I just
+out where to get it. On my device I knew that it had to be one of the block devices in `/dev/block/mmcblk0p*` so I just
 wrote a script to try every single one of them until the data looked right. It turns out the on my version of the
 SM-P900 it is `/dev/block/mmcblk0p9` so I was able to extract it to my SD card by running this command locally on the
 tablet as the root user:
@@ -164,7 +164,7 @@ button as well but that does not seem to be necessary and makes it much more phy
 
 If all went well the device should restart. If you go to Settings -> About Device then the kernel version section you
 should see your\_username@your\_linux\_computer\_name which indicates that the custom kernel has been applied. Below
-that there is a section that says "SE for Android status" which should stil say "Enforcing". Now just open a terminal
+that there is a section that says "SE for Android status" which should still say "Enforcing". Now just open a terminal
 (I use JuiceSSH) and run the following:
 
     su

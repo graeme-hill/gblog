@@ -18,7 +18,7 @@ Let's take a look at an example of serializing `Person` with a `firstName` and a
 
 ###### 1. XML only using values:
 
-    <personArray xmlns="some_ridiculously_verbose_namespace_goes_here">    
+    <personArray>    
         <person>
             <firstName>Albert</firstName>
             <lastName>Albertson</firstName>
@@ -32,7 +32,7 @@ Let's take a look at an example of serializing `Person` with a `firstName` and a
 
 ###### 2. XML using attributes and values:
 
-    <personArray xmlns="blah blah">
+    <personArray>
         <person firstName="Albert" lastName="Albertson" />
         <person firstName="James" lastName="Jameson">
             If I put some text here then it's still valid XML, but what the heck does it mean?
@@ -79,7 +79,7 @@ something like this in XML:
 
 ###### XML document:
 
-    <doc xmlns="asdf">
+    <doc>
         <p>Here is some text</p>
         <p>Here is some more <em>text</em> with emphasis</p>
     </doc>
@@ -100,7 +100,7 @@ can have text formatting.
 
 ###### Pure XML approach:
 
-    <people xmlns="asdf">
+    <people>
         <person>
             <firstName>Albert</firstName>
             <lastName>Albertson</lastName>
@@ -142,4 +142,4 @@ withing a JSON property but it's certainly not very human readable especially wh
 removing all the whitespace to create one gigantic line. Normally I'm a bug fan of JSON, but this case really bothers me.
 Embedding escaped XML strings within a JSON document just feels wrong.
 
-I don't have an actualy conclusion. I just wanted to point out that it's a hard decision to make.
+I don't have an actual conclusion. I just wanted to point out that it's a hard decision to make.

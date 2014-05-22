@@ -150,4 +150,3 @@ Make sure to replace `ubuntu.img` with the actual name of your image file. If al
 a few settings and then you're in! Alternatively, if you want an easier way to start it up you can just click the
 launch button in Complete Linux Installer and then SSH to localhost with JuiceSSH or whatever is you're preferred
 terminal client.
-
