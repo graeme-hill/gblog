@@ -1,0 +1,173 @@
+title: Minimalist cross-platform UUID/GUID generation in C++
+labels: C++
+
+#### TL;DR
+
+Here's the source code: 
+[github.com/graeme-hill/cpp-uuid](http://github.com/graeme-hill/cpp-uuid)
+
+#### Definitions
+
+**Minimalist:** The amount of code will have a negligible affect on compile
+time and deployment size. It should also be trivial to source embed the module
+instead of linking a `.so`, `.a`, `.dll`, etc. The implementation should also
+avoid unnecessary abstraction so that their are fewer lines of code and anyone
+can quickly read the implementation to see clearly what it is doing.
+
+**Cross platform:** Works on all major operating systems. I am going for
+Windows, Linux, Mac OS, Android, and iOS.
+
+**UUID/GUID:** UUID stands for Universally Unique Identifier and GUID stands
+for Globally Unique Identifier. Although the names imply that a GUID is not
+guaranteed to be unique of we combine values from across the galaxy, the real
+differentiation is that GUID refers to various implementations of the UUID
+standard. For our purposes we can consider them synonyms. In any case, the 
+values themselves are 128 bits of data that are guaranteed to be unique *among
+other properly generated unique identifiers*. They are not cryptographically 
+random numbers. If ID conflicts can break your system or create security 
+concerns then GUIDs are not for you unless you can complete control over their 
+generation. For example, if you have an API where you can create entities with 
+GUIDs for identifiers and an ID collision would break the system, then you 
+probably don't want third party consumers of your API to be allowed to generate 
+their own GUIDs; you want the server to do all the GUID generation.
+
+**C++:** I mean actual modern C++ not C with classes.
+
+#### Goal
+
+Create a very small implementation that utilizes the best, most standardized
+method of UUID generation on each system instead of using any risky, untested,
+half-baked implementations that may be flawed. This means that we will need to
+use some form of conditional compilation so that we can have slightly different
+code depending on the OS, and we will need some wrapper so that external code
+which utilizes this UUID library can ignore the underlying system
+implementation. There should also be no dependencies on any non-standard
+libraries.
+
+#### Why
+
+I am implementing this from scratch because I couldn't find any existing
+implementation that was sufficiently generic and minimal. I generally avoid
+boost because boost modules tend to depend on other boost modules and then all
+of a sudden you have a ton of extra dependencies.
+
+#### Common interface
+
+First let's define an operating system agnostic class for our identifiers. Note
+that there is no way for me to be completely consistent in my use of either
+GUID or UUID since the Windows world tends to use the term GUID while the unix
+world uses the term UUID. In the generic interface I will use GUID because it
+is easier to pronounce and I think it looks nicer in pascal case.
+
+    // Class to represent a GUID/UUID. Each instance acts as a wrapper around a
+    // 16 byte value that can be passed around by value. It also supports
+    // conversion to string (via the stream operator <<) and conversion from a
+    // string via constructor.
+    class Guid
+    {
+      public:
+    
+        // create a guid from vector of bytes
+        Guid(const vector<unsigned char> &bytes);
+    
+        // create a guid from array of bytes
+        Guid(const unsigned char *bytes);
+    
+        // create a guid from string
+        Guid(const string &fromString);
+    
+        // create empty guid
+        Guid();
+    
+        // copy constructor
+        Guid(const Guid &other);
+    
+        // overload assignment operator
+        Guid &operator=(const Guid &other);
+    
+        // overload equality and inequality operator
+        bool operator==(const Guid &other) const;
+        bool operator!=(const Guid &other) const;
+    
+      private:
+    
+        // actual data
+        vector<unsigned char> _bytes;
+    
+        // make the << operator a friend so it can access _bytes
+        friend ostream &operator<<(ostream &s, const Guid &guid);
+    };
+
+The implementations of all the functions prototyped above can be generic, but
+there will be another class named `GuidGenerator` which will need to have some
+custom code for each operating system. To keep things simple and avoid coupling
+this code with any build system, I'll just use a series of super ugly `#ifdef`s
+to split out platform specific code. Now let's look at how we generate a guid
+on each operating system...
+
+#### Linux
+
+Pretty much all linux systems have built-in UUID implementations. In fact, if
+you just run a command line this in the terminal it should print out a guid:
+
+    cat /proc/sys/kernel/random
+
+Or you can use a command line tool available on most systems:
+
+    uuidgen
+
+`uuidgen` depends on a C library called libuuid. We could try invoking one of
+the above command from our C++ program, but it's much better to directly use
+the library that `uuidgen` depends on. In order to do that we'll need the header
+files to be available on the system instead of just the compiled library
+itself. If you're on Ubuntu you can install it with this command:
+
+    sudo apt-get install uuid-dev
+
+Then you can test it out by making a simple C++ program that generates a UUID
+and prints it to the console:
+
+    // linux_uuid_test.cpp
+
+    #include <uuid/uuid.h>
+    #include <iostream>
+    
+    int main(int argc, char *argv[])
+    {
+      uuid_t id;
+      uuid_generate(id);
+    
+      char *string = new char[100];
+      uuid_unparse(id, string);
+    
+      std::cout << string << std::endl;
+    
+      return 0;
+    }
+
+To compile the program make sure you supply the `-luuid` argument:
+
+    g++ linux_uuid_test.cpp -o linux_uuid_test -luuid
+
+And then run it:
+
+    ./linux_uuid_test
+
+Okay so that was easy. Now that we know how to use `uuid_generate()` we can
+implement the linux version of `generateGuid()` as follows:
+
+    #ifdef GUID_LIBUUID
+    Guid generateGuid()
+    {
+        uuid_t id;
+        uuid_generate(id);
+        return id;
+    }
+    #endif
+
+#### MacOS & iOS
+
+Apple if nice enough to have strong API parity between MacOS and iOS so we only
+need one implementation for the two operating systems. Since `CoreFoundation`
+framework contains a C function named `CFUUIDCreate` we don't even have to do
+any Objective-C++ magic. We can jsut call a plain old C function
