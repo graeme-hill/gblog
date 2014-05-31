@@ -151,13 +151,14 @@ To compile the program make sure you supply the `-luuid` argument:
 
 And then run it:
 
+    chmod +x linux_uuid_test
     ./linux_uuid_test
 
 Okay so that was easy. Now that we know how to use `uuid_generate()` we can
-implement the linux version of `generateGuid()` as follows:
+implement the linux version of `Guid::newGuid()` as follows:
 
     #ifdef GUID_LIBUUID
-    Guid generateGuid()
+    Guid Guid::newGuid()
     {
         uuid_t id;
         uuid_generate(id);
@@ -170,4 +171,91 @@ implement the linux version of `generateGuid()` as follows:
 Apple if nice enough to have strong API parity between MacOS and iOS so we only
 need one implementation for the two operating systems. Since `CoreFoundation`
 framework contains a C function named `CFUUIDCreate` we don't even have to do
-any Objective-C++ magic. We can jsut call a plain old C function
+any Objective-C++ magic. We can just call a plain old C function. Here's a
+little hello world program that creates a guid and prints it on the screen.
+Since it gives each byte as a separate variable we need to write some long
+winded code to write them all:
+
+    #include <CoreFoundation/CFUUID.h>
+    #include <iostream>
+    
+    void printByte(unsigned char byte)
+    {
+      printf("%02x", byte);
+    }
+    
+    int main(int argc, char *argv[])
+    {
+      auto guid = CFUUIDCreate(NULL);
+      auto bytes = CFUUIDGetUUIDBytes(guid);
+      CFRelease(guid);
+    
+      printByte(bytes.byte0);
+      printByte(bytes.byte1);
+      printByte(bytes.byte2);
+      printByte(bytes.byte3);
+      std::cout << "-";
+      printByte(bytes.byte4);
+      printByte(bytes.byte5);
+      std::cout << "-";
+      printByte(bytes.byte6);
+      printByte(bytes.byte7);
+      std::cout << "-";
+      printByte(bytes.byte8);
+      printByte(bytes.byte9);
+      std::cout << "-";
+      printByte(bytes.byte10);
+      printByte(bytes.byte11);
+      printByte(bytes.byte12);
+      printByte(bytes.byte13);
+      printByte(bytes.byte14);
+      printByte(bytes.byte15);
+    
+      std::cout << std::endl;
+      
+      return 0;
+    }
+
+If you call this file `mac_uuid_test.cpp` then you can compile it with:
+
+    clang++ mac_uuid_test.cpp -o mac_uuid_test -std=c++11 -framework CoreFoundation
+
+And then run it:
+
+    chmod +x mac_uuid_test
+    ./mac_uuid_test
+
+Now that we've proven the basic functions work as expected, it can be converted
+to an actual implementation of `Guid::newGuid()`:
+
+    #ifdef GUID_CFUUID
+    Guid GuidGenerator::newGuid()
+    {
+      auto newId = CFUUIDCreate(NULL);
+      auto bytes = CFUUIDGetUUIDBytes(newId);
+      CFRelease(newId);
+    
+      const unsigned char byteArray[16] =
+      {
+        bytes.byte0,
+        bytes.byte1,
+        bytes.byte2,
+        bytes.byte3,
+        bytes.byte4,
+        bytes.byte5,
+        bytes.byte6,
+        bytes.byte7,
+        bytes.byte8,
+        bytes.byte9,
+        bytes.byte10,
+        bytes.byte11,
+        bytes.byte12,
+        bytes.byte13,
+        bytes.byte14,
+        bytes.byte15
+      };
+      return byteArray;
+    }
+    #endif
+
+
