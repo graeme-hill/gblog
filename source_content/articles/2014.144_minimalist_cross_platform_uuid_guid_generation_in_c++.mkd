@@ -4,7 +4,7 @@ labels: C++
 #### TL;DR
 
 Here's the source code: 
-[github.com/graeme-hill/cpp-uuid](http://github.com/graeme-hill/cpp-uuid)
+[github.com/graeme-hill/crossguid](http://github.com/graeme-hill/crossguid)
 
 #### Definitions
 
@@ -258,7 +258,7 @@ to an actual implementation of `Guid::newGuid()`:
     }
     #endif
 
-### Windows
+#### Windows
 
 In Windows there is a function called `CoCreateGuid` in `objbase.h` that
 creates a `GUID` value. The function is pretty simple to use, but it's a bit of
@@ -313,3 +313,68 @@ And this can be incorporated in the `GuidGenerator` class like so:
         return bytes;
     }
     #endif
+
+#### Android
+
+This is definitely where it gets tricky. The correct way to generate a guid in
+Android is using the Java API, not any native C or C++ functions. What we'll
+do is use JNI (Java Native Interface) to invoke a Java function from C++. Since
+Android apps always have a Java entry point and then optionally delegate to a
+C++ library, we can take the `JNIEnv` pointer that is given at startup and use
+it to call `randomUUID()` on `java.util.UUID`. For this case I had to make a
+special constructor for `GuidGenerator`. The implementation is as follows:
+
+    #ifdef GUID_ANDROID
+    GuidGenerator::GuidGenerator(JNIEnv *env)
+    {
+      _env = env;
+      _activityClass = env->FindClass("ca/graemehill/crossguid/testapp/MainActivity");
+      _uuidClass = env->FindClass("java/util/UUID");
+      _newGuidMethod = env->GetStaticMethodID(_activityClass, "newGuid", "()Ljava/util/UUID;");
+      _mostSignificantBitsMethod = env->GetMethodID(_uuidClass, "getMostSignificantBits", "()J");
+      _leastSignificantBitsMethod = env->GetMethodID(_uuidClass, "getLeastSignificantBits", "()J");
+    }
+    
+    Guid GuidGenerator::newGuid()
+    {
+      jobject javaUuid = _env->CallStaticObjectMethod(_activityClass, _newGuidMethod);
+      jlong mostSignificant = _env->CallLongMethod(javaUuid, _mostSignificantBitsMethod);
+      jlong leastSignificant = _env->CallLongMethod(javaUuid, _leastSignificantBitsMethod);
+    
+      unsigned char bytes[16] = 
+      {
+        (mostSignificant >> 56) & 0xFF,
+        (mostSignificant >> 48) & 0xFF,
+        (mostSignificant >> 40) & 0xFF,
+        (mostSignificant >> 32) & 0xFF,
+        (mostSignificant >> 24) & 0xFF,
+        (mostSignificant >> 16) & 0xFF,
+        (mostSignificant >> 8) & 0xFF,
+        (mostSignificant) & 0xFF,
+        (leastSignificant >> 56) & 0xFF,
+        (leastSignificant >> 48) & 0xFF,
+        (leastSignificant >> 40) & 0xFF,
+        (leastSignificant >> 32) & 0xFF,
+        (leastSignificant >> 24) & 0xFF,
+        (leastSignificant >> 16) & 0xFF,
+        (leastSignificant >> 8) & 0xFF,
+        (leastSignificant) & 0xFF,
+      };
+      return bytes;
+    }
+    #endif
+
+Actually handling the guids was quite easy, but the JNI calls are a bit tricky
+and so is the project setup. In the git repository there is a subfodler called
+`android` which contains the project scaffolding and everything needed to build
+the project. There is also a custom source file called `jnitest.cpp` which
+contructs a `GuidGenerator` and then invokes the exact same tests that run on
+every other platform. There is also a script (`android.sh`) that will compile
+the library for every CPU supported by android and run an app on your emulator
+that displays test output.
+
+#### Full source
+
+For the full source code and more info on how to use or build it, check out the
+repository on GitHub:
+[github.com/graeme-hill/crossguid](http://github.com/graeme-hill/crossguid)
