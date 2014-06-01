@@ -11,7 +11,7 @@ Here's the source code:
 **Minimalist:** The amount of code will have a negligible affect on compile
 time and deployment size. It should also be trivial to source embed the module
 instead of linking a `.so`, `.a`, `.dll`, etc. The implementation should also
-avoid unnecessary abstraction so that their are fewer lines of code and anyone
+avoid unnecessary abstraction so that there are fewer lines of code and anyone
 can quickly read the implementation to see clearly what it is doing.
 
 **Cross platform:** Works on all major operating systems. I am going for
@@ -31,7 +31,7 @@ GUIDs for identifiers and an ID collision would break the system, then you
 probably don't want third party consumers of your API to be allowed to generate 
 their own GUIDs; you want the server to do all the GUID generation.
 
-**C++:** I mean actual modern C++ not C with classes.
+**C++:** I mean actual modern C++ where possible, not just C with classes.
 
 #### Goal
 
@@ -108,7 +108,7 @@ on each operating system...
 #### Linux
 
 Pretty much all linux systems have built-in UUID implementations. In fact, if
-you just run a command line this in the terminal it should print out a guid:
+you just run a command like this in the terminal it should print out a guid:
 
     cat /proc/sys/kernel/random
 
@@ -117,7 +117,7 @@ Or you can use a command line tool available on most systems:
     uuidgen
 
 `uuidgen` depends on a C library called libuuid. We could try invoking one of
-the above command from our C++ program, but it's much better to directly use
+the above commands from our C++ program, but it's much better to directly use
 the library that `uuidgen` depends on. In order to do that we'll need the header
 files to be available on the system instead of just the compiled library
 itself. If you're on Ubuntu you can install it with this command:
@@ -125,9 +125,7 @@ itself. If you're on Ubuntu you can install it with this command:
     sudo apt-get install uuid-dev
 
 Then you can test it out by making a simple C++ program that generates a UUID
-and prints it to the console:
-
-    // linux_uuid_test.cpp
+and prints it to the console (the file is called `linux_uuid_test.cpp`):
 
     #include <uuid/uuid.h>
     #include <iostream>
@@ -168,7 +166,7 @@ implement the linux version of `Guid::newGuid()` as follows:
 
 #### MacOS & iOS
 
-Apple if nice enough to have strong API parity between MacOS and iOS so we only
+Apple is nice enough to have strong API parity between MacOS and iOS so we only
 need one implementation for the two operating systems. Since `CoreFoundation`
 framework contains a C function named `CFUUIDCreate` we don't even have to do
 any Objective-C++ magic. We can just call a plain old C function. Here's a
@@ -262,7 +260,7 @@ to an actual implementation of `Guid::newGuid()`:
 
 In Windows there is a function called `CoCreateGuid` in `objbase.h` that
 creates a `GUID` value. The function is pretty simple to use, but it's a bit of
-a pain to extract the actual butes. If we make a completely empty C++ project 
+a pain to extract the actual bytes. If we make a completely empty C++ project 
 in Visual Studio then we can test it with one simple file that looks like this:
 
     #include <iostream>
