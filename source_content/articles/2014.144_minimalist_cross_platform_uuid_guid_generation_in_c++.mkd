@@ -258,4 +258,58 @@ to an actual implementation of `Guid::newGuid()`:
     }
     #endif
 
+### Windows
 
+In Windows there is a function called `CoCreateGuid` in `objbase.h` that
+creates a `GUID` value. The function is pretty simple to use, but it's a bit of
+a pain to extract the actual butes. If we make a completely empty C++ project 
+in Visual Studio then we can test it with one simple file that looks like this:
+
+    #include <iostream>
+    #include <objbase.h>
+    
+    int main(int argc, char *argv)
+    {
+        GUID guid;
+        CoCreateGuid(&guid);
+    
+        printf("%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX",
+            guid.Data1, guid.Data2, guid.Data3,
+            guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+            guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+    }
+
+And this can be incorporated in the `GuidGenerator` class like so:
+
+    #ifdef GUID_WINDOWS
+    Guid GuidGenerator::newGuid()
+    {
+        GUID newId;
+        CoCreateGuid(&newId);
+    
+        const unsigned char bytes[16] = 
+        {
+            (newId.Data1 >> 24) & 0xFF,
+            (newId.Data1 >> 16) & 0xFF,
+            (newId.Data1 >> 8) & 0xFF,
+            (newId.Data1) & 0xff,
+
+            (newId.Data2 >> 8) & 0xFF,
+            (newId.Data2) & 0xff,
+    
+            (newId.Data3 >> 8) & 0xFF,
+            (newId.Data3) & 0xFF,
+   
+            newId.Data4[0],
+            newId.Data4[1],
+            newId.Data4[2],
+            newId.Data4[3],
+            newId.Data4[4],
+            newId.Data4[5],
+            newId.Data4[6],
+            newId.Data4[7]
+        };
+    
+        return bytes;
+    }
+    #endif
