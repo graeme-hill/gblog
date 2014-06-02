@@ -367,7 +367,7 @@ special constructor for `GuidGenerator`. The implementation is as follows:
     #endif
 
 Actually handling the guids was quite easy, but the JNI calls are a bit tricky
-and so is the project setup. In the git repository there is a subfodler called
+and so is the project setup. In the git repository there is a subfolder called
 `android` which contains the project scaffolding and everything needed to build
 the project. There is also a custom source file called `jnitest.cpp` which
 contructs a `GuidGenerator` and then invokes the exact same tests that run on
