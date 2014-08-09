@@ -1,7 +1,7 @@
 title: Fixing a Cherry MX switch when the stem comes out with a key
 labels: Keyboard
 
-I recently bought a [http://www.wasdkeyboards.com/](WASD V2 Mechanical Keyboard)
+I recently bought a [WASD V2 Mechanical Keyboard](http://www.wasdkeyboards.com/)
 with clear mx switches and sound dampeners. I actually only got the sound
 dampeners so that I could try them out and I decided that they reduced the
 travel too much so I needed to remove them. Luckily the keyboard came with a key
