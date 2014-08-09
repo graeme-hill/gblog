@@ -1,4 +1,5 @@
 title: Fixing a Cherry MX swith when the stem comes out with a key
+labels: Keyboard
 
 I recently bought a [http://www.wasdkeyboards.com/](WASD V2 Mechanical Keyboard)
 with clear mx switches and sound dampeners. I actually only got the sound
