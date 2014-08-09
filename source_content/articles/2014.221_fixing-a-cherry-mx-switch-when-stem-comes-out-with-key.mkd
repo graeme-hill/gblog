@@ -1,0 +1,63 @@
+title: Fixing a Cherry MX swith when the stem comes out with a key
+
+I recently bought a [http://www.wasdkeyboards.com/](WASD V2 Mechanical Keyboard)
+with clear mx switches and sound dampeners. I actually only got the sound
+dampeners so that I could try them out and I decided that they reduced the
+travel too much so I needed to remove them. Luckily the keyboard came with a key
+puller so it seemed like an easy job. I made sure to follow the instructions
+given on their
+[http://support.wasdkeyboards.com/customer/portal/articles/1415061-removing-cherry-mx-keycaps](support
+video on removing the key caps) but on two of the keys the stem actually came
+out with the key (the stem is the colored part that sits on top of the spring).
+I don't think I did anything particularly stupid but I am also willing to accept
+that it may have been user error. The generous customer support people at WASD
+keyboards were kind enough to send me some replacement switches but in the mean
+time I wanted to try fixing them myself so that I wouldn't have to wait so long.
+Here's the process that worked for me:
+
+#### Open the case
+
+You cannot just ram the stem back into switch. You would probably damage it even
+if you were strong enough to get it in. You actually need to remove the entire
+switch and take it apart to get the stem back in, which almost definite means
+that you'll need to remove the case (although that may depend on your keyboard).
+With my WASD keyboard I was able to follow
+[https://www.youtube.com/watch?v=WArnpRa1rD8](this process) to open the case.
+
+#### Removing the switch
+
+When I say remove the switch I mean the entire black part that houses the spring
+and stem. If you have a plate mounted keyboard then this is likely a lot easier
+and you can probably just remove it with some tweezers like in
+[https://www.youtube.com/watch?v=HysRQnJiupQ](this video). Generally speaking
+all of the tutorials that explain how to remove switches without soldering are
+for plate mounted keyboards. The WASD keyboard however is PCB mounted which
+means that the switches are soldered directly onto the circuit board and you will need
+to desolder the contacts to remove the switch and then resolder it again
+afterward. WASD also provides an [http://youtu.be/wVcMniXKauM](an instructional
+video on desoldering switches). Since I wasn't quite as well equipped as the guy
+in the video I had no solder wick or solder pump which makes it surprisingly
+difficult to avoid melting the solder and then having it immediately resolidify
+in the same place. I used some tweezers with little hooks on the end to pull on
+the switch while I was melting the solder so that it just popped out as soon as
+it was melted.
+
+#### Reparing the removed switch
+
+The black casing of the switch is actually in two parts which you can separate by
+carefully pulling up the little flaps on the side. Once the parts are separated,
+take the bottom piece and place the spring on the little nob, and then put the
+stem on top of that. Then you just reattach the top of the switch casing to hold
+the spring and stem in place.
+
+#### Reattach the switch
+
+Again, if you have a PCB mounted keyboard you'll have to solder your switch back
+on. Make sure that you don't go overboard with the solder. Whenever you are
+soldering onto a PCB there is a potential to create a short-circuit by
+accidentally joining two contacts.
+
+Technically speaking, the stem of a cherry mx switch should not come out at all
+and the support guy at WASD warned me that the switch may be compromised once it
+has been ripped out by accident. In my case, however, the repaired keys seem to
+be functioning just fine.
