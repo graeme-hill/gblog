@@ -1,6 +1,9 @@
 title: Entity Framework dynamic queries and parameterization
 labels: LINQ, Entity Framework, SQL
 
+*Update (August 09/2014)* There is a new paragraph at the bottom of the article explaining
+a workaround to this problem.
+
 Here's an interesting quirk in Entity Framework 6's SQL generation. If we write some C# like this:
 
     var name = "foo";
@@ -66,7 +69,7 @@ the problem:
 
 [http://stackoverflow.com/questions/7220626/local-variable-and-expression-trees](http://stackoverflow.com/questions/7220626/local-variable-and-expression-trees)
 
-As Jon Skeet explains, their is some compiler magic involved in generating an expression that can access a local variable
+As Jon Skeet explains, there is some compiler magic involved in generating an expression that can access a local variable
 even though the expression may be evaluated in some other scope. This is part of the newish closure functionality in .NET
 and is very cool, but sadly doesn't help us when the expression is dynamically generated unless you want to do some custom
 IL generation at runtime or invent a workaround like using a pool of global variables or something hacky like that (I
@@ -74,3 +77,42 @@ tested and it does actually work with global variables, but that doesn't count a
 
 When it comes down to it, I don't actually want to change the expression at all. I think the expression is correct and it's
 actually the SQL generation in Entity Framework that is wrong.
+
+*Update (August 09/2014)* There is a workaround to this issue and it turns out this it's pretty simple. You just have to
+wrap you constant in another class and then reference it by either a `PropertyExpression` or a `FieldExpression`. It's
+also pretty easy to do this in a generic way:
+
+    public static class ExpressionHelper
+    {
+        public static MemberExpression WrappedConstant<TValue>(TValue value)
+        {
+            var wrapper = new WrappedObj<TValue>(value);
+            return Expression.Property(
+                Expression.Constant(wrapper),
+                typeof(WrappedObj<TValue>).GetProperty("Value"));
+        }
+
+        private class WrappedObj<TValue>
+        {
+            public TValue Value { get; set; }
+            public WrappedObj(TValue value)
+            {
+                this.Value = value;
+            }
+        }
+    }
+
+Now a dynamic expression can be created like this:
+
+    // this code is the same as: filter = (p) => p.Name == "name";
+    var expectedName = ExpressionHelper.WrappedConstant("name");
+    var param = Expression.Parameter(typeof(Person));
+    var namePropery = Expression.Property(param, typeof(Person).GetProperty("Name"));
+    var equal = Expression.Equal(nameProperty, expectedName);
+    var filter = Expression.Lambda(equal, param);
+
+Now when you get Entity Framework 6 to generate sql with this filter you'll end up with this:
+
+    SELECT [name], [email] FROM People WHERE [name]=@p__linq__0
+
+Yay!
