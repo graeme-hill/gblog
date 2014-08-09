@@ -1,4 +1,4 @@
-title: Fixing a Cherry MX swith when the stem comes out with a key
+title: Fixing a Cherry MX swicth when the stem comes out with a key
 labels: Keyboard
 
 I recently bought a [http://www.wasdkeyboards.com/](WASD V2 Mechanical Keyboard)
