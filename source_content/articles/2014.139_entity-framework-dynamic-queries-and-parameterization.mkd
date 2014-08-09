@@ -1,7 +1,7 @@
 title: Entity Framework dynamic queries and parameterization
 labels: LINQ, Entity Framework, SQL
 
-*Update (August 09/2014)* There is a new paragraph at the bottom of the article explaining
+**Update (August 09/2014)** There is a new paragraph at the bottom of the article explaining
 a workaround to this problem.
 
 Here's an interesting quirk in Entity Framework 6's SQL generation. If we write some C# like this:
@@ -78,8 +78,8 @@ tested and it does actually work with global variables, but that doesn't count a
 When it comes down to it, I don't actually want to change the expression at all. I think the expression is correct and it's
 actually the SQL generation in Entity Framework that is wrong.
 
-*Update (August 09/2014)* There is a workaround to this issue and it turns out this it's pretty simple. You just have to
-wrap you constant in another class and then reference it by either a `PropertyExpression` or a `FieldExpression`. It's
+**Update (August 09/2014)** There is a workaround to this issue and it turns out that it's pretty simple. You just have to
+wrap your constant in another class and then reference it by either a `PropertyExpression` or a `FieldExpression`. It's
 also pretty easy to do this in a generic way:
 
     public static class ExpressionHelper
