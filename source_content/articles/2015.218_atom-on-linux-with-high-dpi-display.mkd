@@ -16,25 +16,25 @@ stylesheet.
 To scale the tiny bits to 150% just go to Edit -> Open your stylesheet and add
 the following:
 
-  body {
-    font-size: 1.5em;
-  }
+    body {
+      font-size: 1.5em;
+    }
 
-  .icon::before {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
+    .icon::before {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
 
-  .list-tree.has-collapsable-children .list-nested-item > .list-item::before,
-  .list-tree.has-collapsable-children .list-nested-item.collapsed > .list-item::before {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
+    .list-tree.has-collapsable-children .list-nested-item > .list-item::before,
+    .list-tree.has-collapsable-children .list-nested-item.collapsed > .list-item::before {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
 
-  .tab-bar .tab {
-    height: 4.5em;
-  }
+    .tab-bar .tab {
+      height: 4.5em;
+    }
 
 Save the file and all the text should immediately become readable and fabulous.
