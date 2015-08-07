@@ -1,0 +1,40 @@
+title: Atom on Linux with high DPI display
+labels: atom
+
+I just became the proud new owner of a 3rd generation Lenovo Thinkpad X1
+Carbon. There are a lot of things I like about this computer but top of list
+is definitely the 2560x1440 screen resolution. The first thing I did when I got
+the computer was wipe the Windows install and replace it with Ubuntu Gnome. I
+chose Gnome because I like the way it handles high DPI screens but sadly Atom
+did not get the memo. I'm not 100% sure on this but it seems like Atom is smart
+enough to scale properly on Windows but that is definitely not the case in Linux
+(or at least in Gnome 3). It's easy to scale the actual text in the editor (just
+ctrl +/- as you would in your browser) but that does not scale anything in the
+file tree, tab bar, status bar, etc. For that you will need to edit your
+stylesheet.
+
+To scale the tiny bits to 150% just go to Edit -> Open your stylesheet and add
+the following:
+
+  body {
+    font-size: 1.5em;
+  }
+
+  .icon::before {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .list-tree.has-collapsable-children .list-nested-item > .list-item::before,
+  .list-tree.has-collapsable-children .list-nested-item.collapsed > .list-item::before {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .tab-bar .tab {
+    height: 4.5em;
+  }
+
+Save the file and all the text should immediately become readable and fabulous.
