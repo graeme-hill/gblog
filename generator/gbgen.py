@@ -1,4 +1,5 @@
-import markdown2, os, re, shutil, datetime, calendar, sys, PyRSS2Gen, html.parser, codecs
+import markdown2, os, re, shutil, datetime, calendar, sys, PyRSS2Gen, \
+    html.parser, codecs, pygments
 
 # configuration section
 MAIN_TITLE = 'Graeme Hill\'s Dev Blog'

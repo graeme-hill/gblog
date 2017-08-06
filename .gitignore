@@ -3,3 +3,4 @@ compiled_content/
 __pycache__
 www/
 stage/
+*.pyc
