@@ -73,10 +73,10 @@ Events look like:
 
 ```json
 {
-	"topic": "...",
-	"event": "...",
-	"payload": {},
-	"ref": 0
+  "topic": "...",
+  "event": "...",
+  "payload": {},
+  "ref": 0
 }
 ```
 
@@ -102,10 +102,10 @@ heartbeat every 30 seconds. The heartbeat message looks like this:
 
 ```json
 {
-	"topic": "phoenix",
-	"event": "heartbeat",
-	"payload": {},
-	"ref": 0
+  "topic": "phoenix",
+  "event": "heartbeat",
+  "payload": {},
+  "ref": 0
 }
 ```
 
@@ -119,10 +119,10 @@ want to join and set the `event` to `phx_join`:
 
 ```json
 {
-      "topic": "room:lobby",
-      "event": "phx_join",
-      "payload": {},
-      "ref": 0
+  "topic": "room:lobby",
+  "event": "phx_join",
+  "payload": {},
+  "ref": 0
 }
 ```
 
