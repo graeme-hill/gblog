@@ -1,0 +1,274 @@
+title: Phoenix Channels Client Development
+labels: elixir phoenix
+
+I recently started building a web api in Elixir that makes use of Phoenix
+channels where the intent is to access the API from a C++ websocket client.
+There do exist some C++ client libraries but I like to avoid dependencies when
+possible and this didn't really feel like something that should require a
+library, I just needed some documentation on what the protocol looks like.
+Since I couldn't really find the documentation I was looking for I decided to
+just read the implementation of the javascript client and reverse engineer the
+protocol. The following is is my own observations on how the protocol works.
+
+## Purpose
+
+This document could be helpful to you if you are doing any of the following:
+
+* Connecting to a phoenix channel via websockets using a vanilla websocket
+client library (as opposed to a high level phoenix channels library).
+* Implementing a generic phoenix channels library.
+* Testing your phoenix channel with a websocket test utility
+([like these](https://chrome.google.com/webstore/search/websocket%20client?hl=en))
+* Learning what's going on behind the scenes in a program that uses a high level
+phoenix channels client.
+* You are me and you don't want to forget what you just learned.
+
+If you want a complete specification of the channels websocket protocol then
+this isn't it. It seems like the only definitive source is the code in the JS
+implementation which you can find
+[here](https://github.com/phoenixframework/phoenix/blob/v1.2/web/static/js/phoenix.js).
+
+## Bird's eye view
+
+* Initiate websocket connection with URL specified by the server.
+* All communication is done via json events in a similar form.
+* Once connection is initialized regularly send `heartbeat` event to avoid
+connection timeout.
+* Join a room with `phx_join` message.
+* Send/receive custom events using the room as the `topic`.
+
+## Getting the websocket URL
+
+First of all, Phoenix Channels can support multiple transport mechanisms. For
+this I only care about websockets. In order for your server to allow websocket
+connections you need to have the following line in `user_socket.ex` (it should
+be there by default):
+
+```elixir
+transport :websocket, Phoenix.Transports.WebSocket
+```
+
+And in `endpoint.ex` you should have something like this:
+
+```elixir
+socket "/socket", MyAppWeb.UserSocket
+```
+
+Remember that the word "socket" in `UserSocket` refers not to a websocket
+specifically, but a more general concept of a socket. Since we have specified
+that our socket is available at `/socket` it means that the *websocket* endpoint
+will automatically be `/socket/websocket` because the format is apparently
+`/path_to_socket/<transport>`.
+
+Therefore, in this case, the websocket URL for a localhost test server would
+look like this-ish:
+
+```
+ws://localhost:4000/socket/websocket
+```
+
+## JSON format for events
+
+Events look like:
+
+```json
+{
+	"topic": "...",
+	"event": "...",
+	"payload": {},
+	"ref": 0
+}
+```
+
+* `topic`: Usually this is the room the event relates to.
+* `event`: This defines which handler will get invoked on the server side (or
+potentially client-side if going the other direction). There are some built-in
+events mostly prefixed with `phx_`.
+* `payload`: The actual data associated with the event. For some events (like
+`phx_join`) the payload is ignored.
+* `ref`: Just an idenfifier for the message. When you get back a reply it will
+have the same `ref` value as the event that it is replying to. Since channels
+are asynchronous you could quickly send two events before receiving a reply and
+you would need to use `ref` to know which event it relates to. In my examples I
+have hard coded `ref` to `0` but in reality you could probably want a counter
+and some helper function to get the next reference number (or use a uuid).
+
+## Heartbeat
+
+To avoid a connection timeout the client needs to send the server a heartbeat
+event. I don't actually know how long before the timeout occurs (probably
+configurable on server?) but the javascript client defaults to sending the
+heartbeat every 30 seconds. The heartbeat message looks like this:
+
+```json
+{
+	"topic": "phoenix",
+	"event": "heartbeat",
+	"payload": {},
+	"ref": 0
+}
+```
+
+Normally the `topic` is a room, but in this case it looks like `"phoenix"` is a
+special topic used for system events.
+
+## Joining a room
+
+It's just anothing event, but this time we set the `topic` to be the room we
+want to join and set the `event` to `phx_join`:
+
+```json
+{
+      "topic": "room:lobby",
+      "event": "phx_join",
+      "payload": {},
+      "ref": 0
+}
+```
+
+If the join was successful then you get a response like this:
+
+```json
+{
+  "topic": "room:lobby",
+  "ref": 0,
+  "payload": {
+    "status": "ok",
+    "response": {}
+  },
+  "join_ref": null,
+  "event": "phx_reply"
+}
+```
+
+If the join was *not* successful then you get `"error"` instead of `"ok"`.
+
+## Custom events within a room
+
+In my channel (on the server) I will define two sample handlers:
+
+```elixir
+# Just replies with exact same payload
+def handle_in("echo", payload, socket) do
+  {:reply, payload, socket}
+end
+
+# Same as echo but sends the message to all clients
+def handle_in("shout", payload, socket) do
+  broadcast! socket, "shout", payload
+  {:noreply, socket}
+end
+```
+
+Based on that server, here are some client-server examples:
+
+### Example 1:
+
+Client sends this:
+
+```json
+{
+  "topic": "room:lobby",
+  "event": "echo",
+  "payload": { "hello": "world" },
+  "ref": 0
+}
+```
+
+Server sends this back to *just that one client*:
+
+```json
+{
+  "topic": "room:lobby",
+  "ref": 0,
+  "payload": {
+    "status": "ok",
+    "response": {
+      "hello": "world"
+    }
+  },
+  "join_ref": null,
+  "event": "phx_reply"
+}
+```
+
+### Example 2:
+
+Client sends this:
+
+```json
+{
+  "topic": "room:lobby",
+  "event": "shout",
+  "payload": { "hello": "world" },
+  "ref": 0
+}
+```
+
+Server sends this to *every client in room:lobby*:
+
+```json
+{
+  "topic": "room:lobby",
+  "ref": null,
+  "payload": {
+    "hello": "world"
+  },
+  "join_ref": null,
+  "event": "shout"
+}
+```
+
+### Example 3:
+
+Client sends this:
+
+```json
+{
+  "topic": "room:lobby",
+  "event": "event-that-does-not-exist-on-server",
+  "payload": { },
+  "ref": 0
+}
+```
+
+Since the event is not valid the server sends this reply:
+
+```json
+{
+  "topic": "room:lobby",
+  "ref": 0,
+  "payload": {},
+  "event": "phx_error"
+}
+```
+
+### Example 4:
+
+Client sends this:
+
+```json
+{
+  "topic": "room:room-that-does-not-exist",
+  "event": "echo",
+  "payload": { },
+  "ref": 0
+}
+```
+
+Since the room is not the one we joined the server sends this reply:
+
+```json
+{
+  "topic": "room:mainn",
+  "ref": 0,
+  "payload": {
+    "status": "error",
+    "response": {
+      "reason": "unmatched topic"
+    }
+  },
+  "join_ref": null,
+  "event": "phx_reply"
+}
+```
