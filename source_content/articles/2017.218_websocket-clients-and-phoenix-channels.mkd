@@ -1,4 +1,4 @@
-title: Phoenix Channels Client Development
+title: Websocket Clients and Phoenix Channels
 labels: elixir phoenix
 
 I recently started building a web api in Elixir that makes use of Phoenix

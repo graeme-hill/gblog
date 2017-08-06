@@ -198,14 +198,14 @@ def write_article_page(article, compiled_path, templates):
     file_dir = pathify(compiled_path, article.slug)
     file_path = pathify(file_dir, ROOT_FILE_NAME)
     os.makedirs(file_dir)
-    article_html = render_template(templates[ARTICLE_TEMPLATE_NAME], { 
-        'title': article.metadata.title, 
+    article_html = render_template(templates[ARTICLE_TEMPLATE_NAME], {
+        'title': article.metadata.title,
         'slug': article.slug,
-        'content': article.long_html, 
+        'content': article.long_html,
         'date': article.date,
         'article_url': absolute_url(article.slug) })
-    html = render_template(templates[MAIN_TEMPLATE_NAME], { 
-        'title': article.metadata.title, 
+    html = render_template(templates[MAIN_TEMPLATE_NAME], {
+        'title': article.metadata.title,
         'content': article_html })
     write_text(file_path, html)
 
@@ -229,9 +229,9 @@ def write_index(articles, compiled_path, templates):
     file_path = pathify(compiled_path, ROOT_FILE_NAME)
     articles_html = ''
     for article in sorted(articles, key=lambda a: a.date, reverse=True):
-        articles_html += render_template(templates[ARTICLE_SUMMARY_WRAPPER_TEMPLATE_NAME], { 
-            'title': article.metadata.title, 
-            'content': article.short_html, 
+        articles_html += render_template(templates[ARTICLE_SUMMARY_WRAPPER_TEMPLATE_NAME], {
+            'title': article.metadata.title,
+            'content': article.short_html,
             'date': article.date,
             'article_url': absolute_url(article.slug) })
     html = render_template(templates[MAIN_TEMPLATE_NAME], {
@@ -248,7 +248,7 @@ def get_article_header_properties(header_text):
     return properties
 
 def markdown_to_html(markdown_text):
-    return markdown2.markdown(markdown_text)
+    return markdown2.markdown(markdown_text, extras=["fenced-code-blocks"])
 
 def compile_article(article_text, file_name):
     header_text, body_text = HEADER_BODY_SPLIT_RE.split(article_text, 1)
