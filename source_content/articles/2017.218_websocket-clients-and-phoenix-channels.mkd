@@ -90,8 +90,8 @@ events mostly prefixed with `phx_`.
 have the same `ref` value as the event that it is replying to. Since channels
 are asynchronous you could quickly send two events before receiving a reply and
 you would need to use `ref` to know which event it relates to. In my examples I
-have hard coded `ref` to `0` but in reality you could probably want a counter
-and some helper function to get the next reference number (or use a uuid).
+have hard coded `ref` to `0` but in reality you probably want a counter and some
+helper function to get the next reference number (or use a uuid).
 
 ## Heartbeat
 
@@ -270,5 +270,20 @@ Since the room is not the one we joined the server sends this reply:
   },
   "join_ref": null,
   "event": "phx_reply"
+}
+```
+
+## Leaving a room
+
+You will automatically leave the room if you disconnect your connection, but you
+can also explicitly leave the room without closing your connection by using the
+built-in event `phx_leave`:
+
+```json
+{
+  "topic": "room:lobby",
+  "event": "phx_leave",
+  "payload": {},
+  "ref": 0
 }
 ```
