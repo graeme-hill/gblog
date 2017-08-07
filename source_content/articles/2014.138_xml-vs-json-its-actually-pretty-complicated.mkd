@@ -6,7 +6,7 @@ and object serialization formats if too often underappreciated. When you're tryi
 XML, or JSON, or some other thing" you should not just look at which is nicer or which is easier to parse. It's more about
 *what* you will be using it for. If you are creating a formatted document with content that needs to be annotated like
 emphasized text and you need to have insignificant whitespace so that you can nicely format things without breaking the
-data then you probably want a markup language so choose XML. If on the other hand you are serializing an array of objects 
+data then you probably want a markup language so choose XML. If on the other hand you are serializing an array of objects
 for consumption over an HTTP API then you almost definitely do not want a markup lanugage, so choose JSON. For the most
 part the world seems to be warming up to JSON over XML. It's more concise and less ambiguous (you don't have to choose
 between attributes and values). It's also easier to convert a JSON document to an object in a typical programming language
@@ -16,32 +16,53 @@ things are a hybrid and that's where it gets temping to use XML for everything.
 
 Let's take a look at an example of serializing `Person` with a `firstName` and a `lastName`:
 
-###### 1. XML only using values:
+### 1. XML only using values:
 
-    <personArray>    
-        <person>
-            <firstName>Albert</firstName>
-            <lastName>Albertson</firstName>
-        </person>
-        <person>
-            <firstName>James</firstName>
-            <lastName>Jameson</lastName>
-            If I put some text here then it's still valid XML, but what the heck does it mean?
-        </person>
-    </personArray>
+```xml
+<personArray>    
+    <person>
+        <firstName>Albert</firstName>
+        <lastName>Albertson</firstName>
+    </person>
+    <person>
+        <firstName>James</firstName>
+        <lastName>Jameson</lastName>
+        If I put some text here then it's still valid XML, but what the heck does it mean?
+    </person>
+</personArray>
+```
 
-###### 2. XML using attributes and values:
+### 2. XML using attributes and values:
 
-    <personArray>
-        <person firstName="Albert" lastName="Albertson" />
-        <person firstName="James" lastName="Jameson">
-            If I put some text here then it's still valid XML, but what the heck does it mean?
-        </person>
-    </personArray>
+```xml
+<personArray>
+    <person firstName="Albert" lastName="Albertson" />
+    <person firstName="James" lastName="Jameson">
+        If I put some text here then it's still valid XML, but what the heck does it mean?
+    </person>
+</personArray>
+```
 
-###### 3. JSON without wrapper:
+### 3. JSON without wrapper:
 
-    [
+```json
+[
+    {
+        "firstName": "Albert",
+        "lastName": "Albertson"
+    },
+    {
+        "firstName": "James",
+        "lastName": "Jameson"
+    }
+]
+```
+
+### 4. JSON with wrapper:
+
+```json
+{
+    "people": [
         {
             "firstName": "Albert",
             "lastName": "Albertson"
@@ -51,21 +72,8 @@ Let's take a look at an example of serializing `Person` with a `firstName` and a
             "lastName": "Jameson"
         }
     ]
-
-###### 4. JSON with wrapper:
-
-    {
-        "people": [
-            {
-                "firstName": "Albert",
-                "lastName": "Albertson"
-            },
-            {
-                "firstName": "James",
-                "lastName": "Jameson"
-            }
-        ]
-    }
+}
+```
 
 The XML has ambiguity because you have to derive meaning from the structure. There's no actual concept of a dictionary
 or array in XML, you just have to know to use it that way when there are multiple nodes of the same type within one
@@ -77,64 +85,74 @@ URL or file name that you just acceseed.
 On the other hand, if instead of serializing an object we want to represent a document with some formatting we might do
 something like this in XML:
 
-###### XML document:
+### XML document:
 
-    <doc>
-        <p>Here is some text</p>
-        <p>Here is some more <em>text</em> with emphasis</p>
-    </doc>
+```xml
+<doc>
+    <p>Here is some text</p>
+    <p>Here is some more <em>text</em> with emphasis</p>
+</doc>
+```
 
-###### JSON document:
+### JSON document:
 
-    {
-        "paragraphs": [
-            [ "Here is some text" ],
-            [ "Here is some more ", { "type": "emphasized", "content": "text" }, " with emphasis" ]
-        ]
-    }
+```json
+{
+    "paragraphs": [
+        [ "Here is some text" ],
+        [ "Here is some more ", { "type": "emphasized", "content": "text" }, " with emphasis" ]
+    ]
+}
+```
 
 I think we can all agree that the JSON example is pretty damn terrible. So even if it's obvious that JSON is better in the
 first example, and XML is better in the second example, what happens when we have a case that mixes the two? For example,
 we need to serialize an array of people, where each `Person` has a `firstName`, a `lastName`, and a `bio` where the `bio`
 can have text formatting.
 
-###### Pure XML approach:
+### Pure XML approach:
 
-    <people>
-        <person>
-            <firstName>Albert</firstName>
-            <lastName>Albertson</lastName>
-            <bio>
-                Albert is some guy with a very similar first and last name.
-                His web page can be found <a href="http://albert.com">here</a>.
-            </bio>
-        </person>
-    </people>
+```xml
+<people>
+    <person>
+        <firstName>Albert</firstName>
+        <lastName>Albertson</lastName>
+        <bio>
+            Albert is some guy with a very similar first and last name.
+            His web page can be found <a href="http://albert.com">here</a>.
+        </bio>
+    </person>
+</people>
+```
 
 I did a few things in this example that you can't easily do in JSON. One is that I made the bio use two lines and nice
 looking indentation event though I don't want that formatting in the actual data. Since extra whitespace has no meaning
 in XML I'm free to do that. The other is that I embedded a link within the bio. It's pretty much impossible to do this
 in pure JSON, but it's common use a hybrid approach.
 
-###### Hybrid JSON approach:
+### Hybrid JSON approach:
 
-    [
-        {
-            "firstName": "Albert",
-            "lastName": "Albertson",
-            "bio": "Albert is some guy with a very similar first and last name. His web page can be found <a href=\"http://albert.com\">here</a>."
-        }
-    ]
+```json
+[
+    {
+        "firstName": "Albert",
+        "lastName": "Albertson",
+        "bio": "Albert is some guy with a very similar first and last name. His web page can be found <a href=\"http://albert.com\">here</a>."
+    }
+]
+```
 
 Or you could splt the bio into a completely different resource:
 
-    [
-        {
-            "firstName": "Albert",
-            "lastName": "Albertson",
-            "bio_href": "/bios/albert.xml"
-        }
-    ]
+```json
+[
+    {
+        "firstName": "Albert",
+        "lastName": "Albertson",
+        "bio_href": "/bios/albert.xml"
+    }
+]
+```
 
 Sadly the JSON kind of falls apart here. The XML example really does look nicer in my opinion and it smoothly handles
 object properties and document content in a seamless way. There's no functional reason why you can't embed an XML string

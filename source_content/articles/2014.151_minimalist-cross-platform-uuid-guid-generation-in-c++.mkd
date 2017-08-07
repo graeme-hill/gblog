@@ -3,7 +3,7 @@ labels: C++
 
 #### TL;DR
 
-Here's the source code: 
+Here's the source code:
 [github.com/graeme-hill/crossguid](http://github.com/graeme-hill/crossguid)
 
 #### Note
@@ -26,14 +26,14 @@ Windows, Linux, Mac OS, Android, and iOS.
 for Globally Unique Identifier. Although the names imply that a GUID is not
 guaranteed to be unique of we combine values from across the galaxy, the real
 differentiation is that GUID refers to various implementations of the UUID
-standard. For our purposes we can consider them synonyms. In any case, the 
+standard. For our purposes we can consider them synonyms. In any case, the
 values themselves are 128 bits of data that are guaranteed to be unique *among
-other properly generated unique identifiers*. They are not cryptographically 
-random numbers. If ID conflicts can break your system or create security 
-concerns then GUIDs are not for you unless you can complete control over their 
-generation. For example, if you have an API where you can create entities with 
-GUIDs for identifiers and an ID collision would break the system, then you 
-probably don't want third party consumers of your API to be allowed to generate 
+other properly generated unique identifiers*. They are not cryptographically
+random numbers. If ID conflicts can break your system or create security
+concerns then GUIDs are not for you unless you can complete control over their
+generation. For example, if you have an API where you can create entities with
+GUIDs for identifiers and an ID collision would break the system, then you
+probably don't want third party consumers of your API to be allowed to generate
 their own GUIDs; you want the server to do all the GUID generation.
 
 **C++:** I mean actual modern C++ where possible, not just C with classes.
@@ -64,44 +64,46 @@ GUID or UUID since the Windows world tends to use the term GUID while the unix
 world uses the term UUID. In the generic interface I will use GUID because it
 is easier to pronounce and I think it looks nicer in pascal case.
 
-    // Class to represent a GUID/UUID. Each instance acts as a wrapper around a
-    // 16 byte value that can be passed around by value. It also supports
-    // conversion to string (via the stream operator <<) and conversion from a
-    // string via constructor.
-    class Guid
-    {
-      public:
-    
-        // create a guid from vector of bytes
-        Guid(const vector<unsigned char> &bytes);
-    
-        // create a guid from array of bytes
-        Guid(const unsigned char *bytes);
-    
-        // create a guid from string
-        Guid(const string &fromString);
-    
-        // create empty guid
-        Guid();
-    
-        // copy constructor
-        Guid(const Guid &other);
-    
-        // overload assignment operator
-        Guid &operator=(const Guid &other);
-    
-        // overload equality and inequality operator
-        bool operator==(const Guid &other) const;
-        bool operator!=(const Guid &other) const;
-    
-      private:
-    
-        // actual data
-        vector<unsigned char> _bytes;
-    
-        // make the << operator a friend so it can access _bytes
-        friend ostream &operator<<(ostream &s, const Guid &guid);
-    };
+```c++
+// Class to represent a GUID/UUID. Each instance acts as a wrapper around a
+// 16 byte value that can be passed around by value. It also supports
+// conversion to string (via the stream operator <<) and conversion from a
+// string via constructor.
+class Guid
+{
+  public:
+
+    // create a guid from vector of bytes
+    Guid(const vector<unsigned char> &bytes);
+
+    // create a guid from array of bytes
+    Guid(const unsigned char *bytes);
+
+    // create a guid from string
+    Guid(const string &fromString);
+
+    // create empty guid
+    Guid();
+
+    // copy constructor
+    Guid(const Guid &other);
+
+    // overload assignment operator
+    Guid &operator=(const Guid &other);
+
+    // overload equality and inequality operator
+    bool operator==(const Guid &other) const;
+    bool operator!=(const Guid &other) const;
+
+  private:
+
+    // actual data
+    vector<unsigned char> _bytes;
+
+    // make the << operator a friend so it can access _bytes
+    friend ostream &operator<<(ostream &s, const Guid &guid);
+};
+```
 
 The implementations of all the functions prototyped above can be generic, but
 there will be another class named `GuidGenerator` which will need to have some
@@ -115,11 +117,15 @@ on each operating system...
 Pretty much all linux systems have built-in UUID implementations. In fact, if
 you just run a command like this in the terminal it should print out a guid:
 
-    cat /proc/sys/kernel/random
+```sh
+cat /proc/sys/kernel/random
+```
 
 Or you can use a command line tool available on most systems:
 
-    uuidgen
+```sh
+uuidgen
+```
 
 `uuidgen` depends on a C library called libuuid. We could try invoking one of
 the above commands from our C++ program, but it's much better to directly use
@@ -127,47 +133,57 @@ the library that `uuidgen` depends on. In order to do that we'll need the header
 files to be available on the system instead of just the compiled library
 itself. If you're on Ubuntu you can install it with this command:
 
-    sudo apt-get install uuid-dev
+```sh
+sudo apt-get install uuid-dev
+```
 
 Then you can test it out by making a simple C++ program that generates a UUID
 and prints it to the console (the file is called `linux_uuid_test.cpp`):
 
-    #include <uuid/uuid.h>
-    #include <iostream>
-    
-    int main(int argc, char *argv[])
-    {
-      uuid_t id;
-      uuid_generate(id);
-    
-      char *string = new char[100];
-      uuid_unparse(id, string);
-    
-      std::cout << string << std::endl;
-    
-      return 0;
-    }
+```c++
+#include <uuid/uuid.h>
+#include <iostream>
+
+int main(int argc, char *argv[])
+{
+  uuid_t id;
+  uuid_generate(id);
+
+  char *string = new char[100];
+  uuid_unparse(id, string);
+
+  std::cout << string << std::endl;
+
+  return 0;
+}
+```
 
 To compile the program make sure you supply the `-luuid` argument:
 
-    g++ linux_uuid_test.cpp -o linux_uuid_test -luuid
+```sh
+g++ linux_uuid_test.cpp -o linux_uuid_test -luuid
+```
 
 And then run it:
 
-    chmod +x linux_uuid_test
-    ./linux_uuid_test
+```sh
+chmod +x linux_uuid_test
+./linux_uuid_test
+```
 
 Okay so that was easy. Now that we know how to use `uuid_generate()` we can
 implement the linux version of `Guid::newGuid()` as follows:
 
-    #ifdef GUID_LIBUUID
-    Guid Guid::newGuid()
-    {
-        uuid_t id;
-        uuid_generate(id);
-        return id;
-    }
-    #endif
+```c++
+#ifdef GUID_LIBUUID
+Guid Guid::newGuid()
+{
+    uuid_t id;
+    uuid_generate(id);
+    return id;
+}
+#endif
+```
 
 #### MacOS & iOS
 
@@ -179,143 +195,155 @@ little hello world program that creates a guid and prints it on the screen.
 Since it gives each byte as a separate variable we need to write some long
 winded code to write them all:
 
-    #include <CoreFoundation/CFUUID.h>
-    #include <iostream>
-    
-    void printByte(unsigned char byte)
-    {
-      printf("%02x", byte);
-    }
-    
-    int main(int argc, char *argv[])
-    {
-      auto guid = CFUUIDCreate(NULL);
-      auto bytes = CFUUIDGetUUIDBytes(guid);
-      CFRelease(guid);
-    
-      printByte(bytes.byte0);
-      printByte(bytes.byte1);
-      printByte(bytes.byte2);
-      printByte(bytes.byte3);
-      std::cout << "-";
-      printByte(bytes.byte4);
-      printByte(bytes.byte5);
-      std::cout << "-";
-      printByte(bytes.byte6);
-      printByte(bytes.byte7);
-      std::cout << "-";
-      printByte(bytes.byte8);
-      printByte(bytes.byte9);
-      std::cout << "-";
-      printByte(bytes.byte10);
-      printByte(bytes.byte11);
-      printByte(bytes.byte12);
-      printByte(bytes.byte13);
-      printByte(bytes.byte14);
-      printByte(bytes.byte15);
-    
-      std::cout << std::endl;
-      
-      return 0;
-    }
+```c++
+#include <CoreFoundation/CFUUID.h>
+#include <iostream>
+
+void printByte(unsigned char byte)
+{
+  printf("%02x", byte);
+}
+
+int main(int argc, char *argv[])
+{
+  auto guid = CFUUIDCreate(NULL);
+  auto bytes = CFUUIDGetUUIDBytes(guid);
+  CFRelease(guid);
+
+  printByte(bytes.byte0);
+  printByte(bytes.byte1);
+  printByte(bytes.byte2);
+  printByte(bytes.byte3);
+  std::cout << "-";
+  printByte(bytes.byte4);
+  printByte(bytes.byte5);
+  std::cout << "-";
+  printByte(bytes.byte6);
+  printByte(bytes.byte7);
+  std::cout << "-";
+  printByte(bytes.byte8);
+  printByte(bytes.byte9);
+  std::cout << "-";
+  printByte(bytes.byte10);
+  printByte(bytes.byte11);
+  printByte(bytes.byte12);
+  printByte(bytes.byte13);
+  printByte(bytes.byte14);
+  printByte(bytes.byte15);
+
+  std::cout << std::endl;
+
+  return 0;
+}
+```
 
 If you call this file `mac_uuid_test.cpp` then you can compile it with:
 
-    clang++ mac_uuid_test.cpp -o mac_uuid_test -std=c++11 -framework CoreFoundation
+```sh
+clang++ mac_uuid_test.cpp -o mac_uuid_test -std=c++11 -framework CoreFoundation
+```
 
 And then run it:
 
-    chmod +x mac_uuid_test
-    ./mac_uuid_test
+```sh
+chmod +x mac_uuid_test
+./mac_uuid_test
+```
 
 Now that we've proven the basic functions work as expected, it can be converted
 to an actual implementation of `Guid::newGuid()`:
 
-    #ifdef GUID_CFUUID
-    Guid GuidGenerator::newGuid()
-    {
-      auto newId = CFUUIDCreate(NULL);
-      auto bytes = CFUUIDGetUUIDBytes(newId);
-      CFRelease(newId);
-    
-      const unsigned char byteArray[16] =
-      {
-        bytes.byte0,
-        bytes.byte1,
-        bytes.byte2,
-        bytes.byte3,
-        bytes.byte4,
-        bytes.byte5,
-        bytes.byte6,
-        bytes.byte7,
-        bytes.byte8,
-        bytes.byte9,
-        bytes.byte10,
-        bytes.byte11,
-        bytes.byte12,
-        bytes.byte13,
-        bytes.byte14,
-        bytes.byte15
-      };
-      return byteArray;
-    }
-    #endif
+```c++
+#ifdef GUID_CFUUID
+Guid GuidGenerator::newGuid()
+{
+  auto newId = CFUUIDCreate(NULL);
+  auto bytes = CFUUIDGetUUIDBytes(newId);
+  CFRelease(newId);
+
+  const unsigned char byteArray[16] =
+  {
+    bytes.byte0,
+    bytes.byte1,
+    bytes.byte2,
+    bytes.byte3,
+    bytes.byte4,
+    bytes.byte5,
+    bytes.byte6,
+    bytes.byte7,
+    bytes.byte8,
+    bytes.byte9,
+    bytes.byte10,
+    bytes.byte11,
+    bytes.byte12,
+    bytes.byte13,
+    bytes.byte14,
+    bytes.byte15
+  };
+  return byteArray;
+}
+#endif
+```
 
 #### Windows
 
 In Windows there is a function called `CoCreateGuid` in `objbase.h` that
 creates a `GUID` value. The function is pretty simple to use, but it's a bit of
-a pain to extract the actual bytes. If we make a completely empty C++ project 
+a pain to extract the actual bytes. If we make a completely empty C++ project
 in Visual Studio then we can test it with one simple file that looks like this:
 
-    #include <iostream>
-    #include <objbase.h>
-    
-    int main(int argc, char *argv)
-    {
-        GUID guid;
-        CoCreateGuid(&guid);
-    
-        printf("%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX",
-            guid.Data1, guid.Data2, guid.Data3,
-            guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-            guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-    }
+```c++
+#include <iostream>
+#include <objbase.h>
+
+int main(int argc, char *argv)
+{
+    GUID guid;
+    CoCreateGuid(&guid);
+
+    printf("%08lX-%04hX-%04hX-%02hhX%02hhX-%02hhX%02hhX%02hhX%02hhX%02hhX%02hhX",
+        guid.Data1, guid.Data2, guid.Data3,
+        guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+        guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+}
+```
 
 And this can be incorporated in the `GuidGenerator` class like so:
 
-    #ifdef GUID_WINDOWS
-    Guid GuidGenerator::newGuid()
-    {
-        GUID newId;
-        CoCreateGuid(&newId);
-    
-        const unsigned char bytes[16] = 
-        {
-            (newId.Data1 >> 24) & 0xFF,
-            (newId.Data1 >> 16) & 0xFF,
-            (newId.Data1 >> 8) & 0xFF,
-            (newId.Data1) & 0xff,
+```c++
+#ifdef GUID_WINDOWS
+Guid GuidGenerator::newGuid()
+{
+    GUID newId;
+    CoCreateGuid(&newId);
 
-            (newId.Data2 >> 8) & 0xFF,
-            (newId.Data2) & 0xff,
-    
-            (newId.Data3 >> 8) & 0xFF,
-            (newId.Data3) & 0xFF,
-   
-            newId.Data4[0],
-            newId.Data4[1],
-            newId.Data4[2],
-            newId.Data4[3],
-            newId.Data4[4],
-            newId.Data4[5],
-            newId.Data4[6],
-            newId.Data4[7]
-        };
-    
-        return bytes;
-    }
-    #endif
+    const unsigned char bytes[16] =
+    {
+        (newId.Data1 >> 24) & 0xFF,
+        (newId.Data1 >> 16) & 0xFF,
+        (newId.Data1 >> 8) & 0xFF,
+        (newId.Data1) & 0xff,
+
+        (newId.Data2 >> 8) & 0xFF,
+        (newId.Data2) & 0xff,
+
+        (newId.Data3 >> 8) & 0xFF,
+        (newId.Data3) & 0xFF,
+
+        newId.Data4[0],
+        newId.Data4[1],
+        newId.Data4[2],
+        newId.Data4[3],
+        newId.Data4[4],
+        newId.Data4[5],
+        newId.Data4[6],
+        newId.Data4[7]
+    };
+
+    return bytes;
+}
+#endif
+```
 
 #### Android
 
@@ -327,44 +355,46 @@ C++ library, we can take the `JNIEnv` pointer that is given at startup and use
 it to call `randomUUID()` on `java.util.UUID`. For this case I had to make a
 special constructor for `GuidGenerator`. The implementation is as follows:
 
-    #ifdef GUID_ANDROID
-    GuidGenerator::GuidGenerator(JNIEnv *env)
-    {
-      _env = env;
-      _uuidClass = env->FindClass("java/util/UUID");
-      _newGuidMethod = env->GetStaticMethodID(_uuidClass, "randomUUID", "()Ljava/util/UUID;");
-      _mostSignificantBitsMethod = env->GetMethodID(_uuidClass, "getMostSignificantBits", "()J");
-      _leastSignificantBitsMethod = env->GetMethodID(_uuidClass, "getLeastSignificantBits", "()J");
-    }
-    
-    Guid GuidGenerator::newGuid()
-    {
-      jobject javaUuid = _env->CallStaticObjectMethod(_uuidClass, _newGuidMethod);
-      jlong mostSignificant = _env->CallLongMethod(javaUuid, _mostSignificantBitsMethod);
-      jlong leastSignificant = _env->CallLongMethod(javaUuid, _leastSignificantBitsMethod);
-    
-      unsigned char bytes[16] = 
-      {
-        (mostSignificant >> 56) & 0xFF,
-        (mostSignificant >> 48) & 0xFF,
-        (mostSignificant >> 40) & 0xFF,
-        (mostSignificant >> 32) & 0xFF,
-        (mostSignificant >> 24) & 0xFF,
-        (mostSignificant >> 16) & 0xFF,
-        (mostSignificant >> 8) & 0xFF,
-        (mostSignificant) & 0xFF,
-        (leastSignificant >> 56) & 0xFF,
-        (leastSignificant >> 48) & 0xFF,
-        (leastSignificant >> 40) & 0xFF,
-        (leastSignificant >> 32) & 0xFF,
-        (leastSignificant >> 24) & 0xFF,
-        (leastSignificant >> 16) & 0xFF,
-        (leastSignificant >> 8) & 0xFF,
-        (leastSignificant) & 0xFF,
-      };
-      return bytes;
-    }
-    #endif
+```c++
+#ifdef GUID_ANDROID
+GuidGenerator::GuidGenerator(JNIEnv *env)
+{
+  _env = env;
+  _uuidClass = env->FindClass("java/util/UUID");
+  _newGuidMethod = env->GetStaticMethodID(_uuidClass, "randomUUID", "()Ljava/util/UUID;");
+  _mostSignificantBitsMethod = env->GetMethodID(_uuidClass, "getMostSignificantBits", "()J");
+  _leastSignificantBitsMethod = env->GetMethodID(_uuidClass, "getLeastSignificantBits", "()J");
+}
+
+Guid GuidGenerator::newGuid()
+{
+  jobject javaUuid = _env->CallStaticObjectMethod(_uuidClass, _newGuidMethod);
+  jlong mostSignificant = _env->CallLongMethod(javaUuid, _mostSignificantBitsMethod);
+  jlong leastSignificant = _env->CallLongMethod(javaUuid, _leastSignificantBitsMethod);
+
+  unsigned char bytes[16] =
+  {
+    (mostSignificant >> 56) & 0xFF,
+    (mostSignificant >> 48) & 0xFF,
+    (mostSignificant >> 40) & 0xFF,
+    (mostSignificant >> 32) & 0xFF,
+    (mostSignificant >> 24) & 0xFF,
+    (mostSignificant >> 16) & 0xFF,
+    (mostSignificant >> 8) & 0xFF,
+    (mostSignificant) & 0xFF,
+    (leastSignificant >> 56) & 0xFF,
+    (leastSignificant >> 48) & 0xFF,
+    (leastSignificant >> 40) & 0xFF,
+    (leastSignificant >> 32) & 0xFF,
+    (leastSignificant >> 24) & 0xFF,
+    (leastSignificant >> 16) & 0xFF,
+    (leastSignificant >> 8) & 0xFF,
+    (leastSignificant) & 0xFF,
+  };
+  return bytes;
+}
+#endif
+```
 
 Actually handling the guids was quite easy, but the JNI calls are a bit tricky
 and so is the project setup. In the git repository there is a subfolder called

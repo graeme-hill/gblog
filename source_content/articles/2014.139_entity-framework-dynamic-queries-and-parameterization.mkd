@@ -6,20 +6,28 @@ a workaround to this problem.
 
 Here's an interesting quirk in Entity Framework 6's SQL generation. If we write some C# like this:
 
-    var name = "foo";
-    var query = myData.Query<Person>().Where(p => p.Name == name);
+```csharp
+var name = "foo";
+var query = myData.Query<Person>().Where(p => p.Name == name);
+```
 
 Then the generated SQL will essentially looks like this (I simplified it a bit):
 
-    SELECT [name], [email] FROM People WHERE [name]=@p__linq__0
+```sql
+SELECT [name], [email] FROM People WHERE [name]=@p__linq__0
+```
 
 The parameter `@p__linq__0` will be set to `"foo"`. However if I instead write the C# part like this:
 
-    var query = myData.Query<Person>().Where(p => p.Name == "foo");
+```csharp
+var query = myData.Query<Person>().Where(p => p.Name == "foo");
+```
 
 Then the generated SQL looks like:
 
-    SELECT [name], [email] FROM People WHERE [name]='foo'
+```sql
+SELECT [name], [email] FROM People WHERE [name]='foo'
+```
 
 Instead of parameterizing the name in the where clause it just directly embedded a string literal. This isn't a security
 concern since I'm sure the inputs are sanitized but it *is* a performance concern. There is often great benefit in
@@ -55,12 +63,14 @@ There's a very easy workaround for static queries that are known at compile time
 you don't have to worry. It gets a little trickier with dynamically generated queries though. Take a look at an example
 like this:
 
-    // this code is the same as: filter = (p) => p.Name == "name";
-    var expectedName = Expression.Constant("name");
-    var param = Expression.Parameter(typeof(Person));
-    var namePropery = Expression.Property(param, typeof(Person).GetProperty("Name"));
-    var equal = Expression.Equal(nameProperty, expectedName);
-    var filter = Expression.Lambda(equal, param);
+```csharp
+// this code is the same as: filter = (p) => p.Name == "name";
+var expectedName = Expression.Constant("name");
+var param = Expression.Parameter(typeof(Person));
+var namePropery = Expression.Property(param, typeof(Person).GetProperty("Name"));
+var equal = Expression.Equal(nameProperty, expectedName);
+var filter = Expression.Lambda(equal, param);
+```
 
 Creating queries like this is pretty common when the query needs to be dynamically generated based on user input like
 if you have an API with a syntax that allows the caller to create an arbitrary filter (eg: OData). If you want a dynamically
@@ -82,37 +92,43 @@ actually the SQL generation in Entity Framework that is wrong.
 wrap your constant in another class and then reference it by either a `PropertyExpression` or a `FieldExpression`. It's
 also pretty easy to do this in a generic way:
 
-    public static class ExpressionHelper
+```csharp
+public static class ExpressionHelper
+{
+    public static MemberExpression WrappedConstant<TValue>(TValue value)
     {
-        public static MemberExpression WrappedConstant<TValue>(TValue value)
-        {
-            var wrapper = new WrappedObj<TValue>(value);
-            return Expression.Property(
-                Expression.Constant(wrapper),
-                typeof(WrappedObj<TValue>).GetProperty("Value"));
-        }
+        var wrapper = new WrappedObj<TValue>(value);
+        return Expression.Property(
+            Expression.Constant(wrapper),
+            typeof(WrappedObj<TValue>).GetProperty("Value"));
+    }
 
-        private class WrappedObj<TValue>
+    private class WrappedObj<TValue>
+    {
+        public TValue Value { get; set; }
+        public WrappedObj(TValue value)
         {
-            public TValue Value { get; set; }
-            public WrappedObj(TValue value)
-            {
-                this.Value = value;
-            }
+            this.Value = value;
         }
     }
+}
+```
 
 Now a dynamic expression can be created like this:
 
-    // this code is the same as: filter = (p) => p.Name == "name";
-    var expectedName = ExpressionHelper.WrappedConstant("name");
-    var param = Expression.Parameter(typeof(Person));
-    var namePropery = Expression.Property(param, typeof(Person).GetProperty("Name"));
-    var equal = Expression.Equal(nameProperty, expectedName);
-    var filter = Expression.Lambda(equal, param);
+```csharp
+// this code is the same as: filter = (p) => p.Name == "name";
+var expectedName = ExpressionHelper.WrappedConstant("name");
+var param = Expression.Parameter(typeof(Person));
+var namePropery = Expression.Property(param, typeof(Person).GetProperty("Name"));
+var equal = Expression.Equal(nameProperty, expectedName);
+var filter = Expression.Lambda(equal, param);
+```
 
 Now when you get Entity Framework 6 to generate sql with this filter you'll end up with this:
 
-    SELECT [name], [email] FROM People WHERE [name]=@p__linq__0
+```sql
+SELECT [name], [email] FROM People WHERE [name]=@p__linq__0
+```
 
 Yay!

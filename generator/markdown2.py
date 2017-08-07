@@ -1782,7 +1782,7 @@ class Markdown(object):
         else:
             code_class_str = self._html_class_str_from_tag("code")
 
-        return "\n\n<pre%s><code%s>%s\n</code></pre>\n\n" % (
+        return "\n\n<div class=\"code_div\"><pre%s><code%s>%s\n</code></pre></div>\n\n" % (
             pre_class_str, code_class_str, codeblock)
 
     def _html_class_str_from_tag(self, tag):
