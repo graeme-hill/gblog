@@ -3,39 +3,45 @@ labels: .NET, LINQ, VB.NET
 
 The title of this article is a pretty obvious statement, but it's actually pretty easy to forget and it can lead to some painful bugs.  Here's a code snippet whose output may seem surprising<!--break-->:
 
-    Module Module1
+```vbnet
+Module Module1
 
-        Sub Main()
-            Dim query = 
-                From name In {"one", "two", "three"}
-                Select New User(name)
+    Sub Main()
+        Dim query =
+            From name In {"one", "two", "three"}
+            Select New User(name)
 
-            Dim x = query.First
-            Dim y = query.First
+        Dim x = query.First
+        Dim y = query.First
 
-            Console.WriteLine(x Is y)
+        Console.WriteLine(x Is y)
 
-            Console.ReadKey()
-        End Sub
+        Console.ReadKey()
+    End Sub
 
-    End Module
+End Module
 
-    Public Class User
-        Public Sub New(ByVal username As String)
-            Console.WriteLine("Creating user: " & username)
-        End Sub
-    End Class
+Public Class User
+    Public Sub New(ByVal username As String)
+        Console.WriteLine("Creating user: " & username)
+    End Sub
+End Class
+```
 
 At first glance it looks like <code>x</code> and <code>y</code> are the same object, but since <code>query</code> is just a query, not an actual collection, the result will be fetched independently each time you call <code>First</code>.  When the code is run, the console output looks like this:
 
-    Creating user: one
-    Creating user: one
-    False
+```
+Creating user: one
+Creating user: one
+False
+```
 
 This shows that the constructor was called twice for the same string, which explains why <code>x</code> and <code>y</code> are actually different objects.  In a case like this it is better to put <code>ToList</code> at the end of the query:
 
-    Dim users =
-        (From name In {"one", "two", "three"}
-         Select New User(name)).ToList()
+```vbnet
+Dim users =
+    (From name In {"one", "two", "three"}
+     Select New User(name)).ToList()
+```
 
 Bugs like this can be particularly problematic when you pass around an object of type <code>IEnumerable</code> and the programmer assumes that they are dealing with a collection, when they are really dealing with a query.  So... watch out!

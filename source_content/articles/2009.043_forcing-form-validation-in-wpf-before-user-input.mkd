@@ -7,13 +7,15 @@ By default, validation is not enforced on a binding until after the value has be
 
 One way to tackle this is to hook a loaded event to the control and then call <code>UpdateSource()</code> from code:
 
-    Private Sub myTextBox_Loaded(ByVal sender As System.Object, _
-            ByVal e As System.Windows.RoutedEventArgs) Handles myTextBox.Loaded
+```vbnet
+Private Sub myTextBox_Loaded(ByVal sender As System.Object, _
+        ByVal e As System.Windows.RoutedEventArgs) Handles myTextBox.Loaded
 
-        BindingOperations.GetBindingExpression(myTextBox, _
-            TextBox.TextProperty).UpdateSource()
+    BindingOperations.GetBindingExpression(myTextBox, _
+        TextBox.TextProperty).UpdateSource()
 
-    End Sub
+End Sub
+```
 
 Unfortunately, this really isn't a desirable solution because it requires some pretty ugly code-behind (not that there's any other kind) and needs to be done over again for every binding.  What we really want is for this functionality to be a part of the binding <a href="http://msdn.microsoft.com/en-us/library/ms747254.aspx" target="_new">markup extension</a>.
 
@@ -21,76 +23,80 @@ Unfortunately, this really isn't a desirable solution because it requires some p
 
 At first I thought it would be easy to just inherit from the <code>Binding</code> class and override <code>ProvideValue</code>, but of course, it is marked as <code>NotOverridable</code> (<code>sealed</code> in C#).  Instead, I create a class called <code>ValidationBinding</code> that inherits directly from <code>MarkupExtension</code> and has the new class manage an instance of <code>Binding</code>.  The code looks like this:
 
-    Imports System.Windows.Markup
+```vbnet
+Imports System.Windows.Markup
 
-    Public Class ValidationBinding
-        Inherits MarkupExtension
+Public Class ValidationBinding
+    Inherits MarkupExtension
 
-        Private _binding As New Binding
-        Private _dependencyObject As DependencyObject
-        Private _dependencyProperty As DependencyProperty
+    Private _binding As New Binding
+    Private _dependencyObject As DependencyObject
+    Private _dependencyProperty As DependencyProperty
 
-        Public Sub New()
-            _binding.ValidatesOnDataErrors = True
-            _binding.ValidatesOnExceptions = True
-        End Sub
+    Public Sub New()
+        _binding.ValidatesOnDataErrors = True
+        _binding.ValidatesOnExceptions = True
+    End Sub
 
-        Public Sub New(ByVal path As String)
-            Me.New()
-            _binding.Path = New PropertyPath(path)
-        End Sub
+    Public Sub New(ByVal path As String)
+        Me.New()
+        _binding.Path = New PropertyPath(path)
+    End Sub
 
-        Public Overrides Function ProvideValue _
-            (ByVal serviceProvider As System.IServiceProvider) As Object
+    Public Overrides Function ProvideValue _
+        (ByVal serviceProvider As System.IServiceProvider) As Object
 
-            Dim valueTarget = _
-                DirectCast(serviceProvider.GetService(GetType(IProvideValueTarget)),  _
-                IProvideValueTarget)
+        Dim valueTarget = _
+            DirectCast(serviceProvider.GetService(GetType(IProvideValueTarget)),  _
+            IProvideValueTarget)
 
-            _dependencyObject = valueTarget.TargetObject
-            _dependencyProperty = valueTarget.TargetProperty
+        _dependencyObject = valueTarget.TargetObject
+        _dependencyProperty = valueTarget.TargetProperty
 
-            If TypeOf _dependencyObject Is FrameworkElement Then
-                Dim element = DirectCast(_dependencyObject, FrameworkElement)
-                If element.IsLoaded Then
-                    ForceValidation()
-                Else
-                    AddHandler element.Loaded, AddressOf ElementLoaded
-                End If
-            Else
+        If TypeOf _dependencyObject Is FrameworkElement Then
+            Dim element = DirectCast(_dependencyObject, FrameworkElement)
+            If element.IsLoaded Then
                 ForceValidation()
+            Else
+                AddHandler element.Loaded, AddressOf ElementLoaded
             End If
-
-            Return _binding.ProvideValue(serviceProvider)
-
-        End Function
-
-        Private Sub ForceValidation()
-            BindingOperations.GetBindingExpression(_dependencyObject, _
-                                                   _dependencyProperty).UpdateSource()
-        End Sub
-
-        Private Sub ElementLoaded(ByVal sender As System.Object, _
-                                  ByVal e As System.Windows.RoutedEventArgs)
+        Else
             ForceValidation()
-        End Sub
+        End If
 
-        Public Property Path() As PropertyPath
-            Get
-                Return _binding.Path
-            End Get
-            Set(ByVal value As PropertyPath)
-                _binding.Path = value
-            End Set
-        End Property
+        Return _binding.ProvideValue(serviceProvider)
 
-        ... the rest of the binding properties go here
+    End Function
 
-    End Class
+    Private Sub ForceValidation()
+        BindingOperations.GetBindingExpression(_dependencyObject, _
+                                               _dependencyProperty).UpdateSource()
+    End Sub
+
+    Private Sub ElementLoaded(ByVal sender As System.Object, _
+                              ByVal e As System.Windows.RoutedEventArgs)
+        ForceValidation()
+    End Sub
+
+    Public Property Path() As PropertyPath
+        Get
+            Return _binding.Path
+        End Get
+        Set(ByVal value As PropertyPath)
+            _binding.Path = value
+        End Set
+    End Property
+
+    ... the rest of the binding properties go here
+
+End Class
+```
 
 The binding can then be used like this (where <code>my</code> is an imported namespace containing <code>ValidationBinding</code>):
 
-    <TextBox Margin="5" Text="{my:ValidationBinding Path=Text}" />
+```xml
+<TextBox Margin="5" Text="{my:ValidationBinding Path=Text}" />
+```
 
 As an example, I have exposed the <code>Binding</code>'s <code>Path</code> property, but <em>you actually have to do this for all of the public properties in <code>Binding</code></em>.  A reference of all the properties that should be implemented can be found <a href="http://msdn.microsoft.com/en-us/library/system.windows.data.binding_members.aspx" target="_new">here</a>.
 

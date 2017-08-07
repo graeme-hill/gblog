@@ -3,24 +3,28 @@ labels: .NET, LINQ, LINQ to SQL, SQL Server, VB.NET
 
 If you attach an entity with a required association that is nulled out, you will be unable to call <code>GetChangeSet()</code>.  In my opinion, the expected behaviour is that the entity should show up in the change set as though it is valid, but an exception should be thrown when you attempt to call <code>SubmitChanges()</code> because a foreign key constraint has been violated.  In fact, with code like this we will get exactly that result (an exception is thrown on <code>SubmitChanges()</code>)<!--break-->:
 
-    Using testData As New TestDataContext
-        Dim newArticle As New Article With {.title = "Foobar", _
-                                            .text = "blah blah blah"}
-        testData.Articles.InsertOnSubmit(newArticle)
-        Dim changes = testData.GetChangeSet()
-        testData.SubmitChanges()
-    End Using
+```vbnet
+Using testData As New TestDataContext
+    Dim newArticle As New Article With {.title = "Foobar", _
+                                        .text = "blah blah blah"}
+    testData.Articles.InsertOnSubmit(newArticle)
+    Dim changes = testData.GetChangeSet()
+    testData.SubmitChanges()
+End Using
+```
 
 There is a required association to the <code>Users</code> table that has not been set at all.  Using the following snippet, with the <code>User</code> property explicitly set to <code>Nothing</code> an exception will be thrown on <code>GetChangeSet()</code> instead of <code>SubmitChanges()</code>:
 
-    Using testData As New TestDataContext
-        Dim newArticle As New Article With {.title = "Foobar", _
-                                            .text = "blah blah blah", _
-                                            .User = Nothing}
-        testData.Articles.InsertOnSubmit(newArticle)
-        Dim changes = testData.GetChangeSet()
-        testData.SubmitChanges()
-    End Using
+```vbnet
+Using testData As New TestDataContext
+    Dim newArticle As New Article With {.title = "Foobar", _
+                                        .text = "blah blah blah", _
+                                        .User = Nothing}
+    testData.Articles.InsertOnSubmit(newArticle)
+    Dim changes = testData.GetChangeSet()
+    testData.SubmitChanges()
+End Using
+```
 
 It gives this error on <code>GetChangeSet()</code>:
 
@@ -28,12 +32,14 @@ It gives this error on <code>GetChangeSet()</code>:
 
 It appears that the internal implementation of LINQ to SQL distinguishes between an unset relationship, and one that has specifically been set to <code>Nothing</code>.  The awkward thing here is that it is not always easy to avoid this issue since you don't even have to call <code>InsertOnSubmit</code>.  Attaching an entity by setting an association to an already attached object gives the same result.
 
-    Using testData As New TestDataContext
-        Dim existingUser = testData.Users.First
-        Dim newUserGroup As New UserGroup With {.User = existingUser, .Group = Nothing}
-        Dim changes = testData.GetChangeSet()
-        testData.SubmitChanges()
-    End Using
+```vbnet
+Using testData As New TestDataContext
+    Dim existingUser = testData.Users.First
+    Dim newUserGroup As New UserGroup With {.User = existingUser, .Group = Nothing}
+    Dim changes = testData.GetChangeSet()
+    testData.SubmitChanges()
+End Using
+```
 
 In this snippet there are two required associations: <code>User</code> and <code>Group</code>.  As soon as <code>User</code> is set, the <code>UserGroup</code> entity is attached to the <code>DataContext</code>.  However, since <code>Group</code> is <code>Nothing</code> the <code>ChangeSet</code> is now corrupt.
 

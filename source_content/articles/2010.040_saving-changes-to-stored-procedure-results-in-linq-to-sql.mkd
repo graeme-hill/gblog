@@ -7,62 +7,66 @@ If you don't want to bother reading the whole article and all of the code, here'
 
 Below is an example that runs a stored procedure to return all users in the database joined with their articles.  The results are converted into an attached list of users, each containing a collection of articles.  Notice that not all of the columns need to be known, just the primary key and timestamp are required.  For more info on the timestamp, check out <a href="/linq-to-sql-gotcha-4-changeconflictexception-on-update-of-manually-attached-data">this article</a>.
 
-    Module Module1
+```vbnet
+Module Module1
 
-        Sub Main()
+    Sub Main()
 
-            Using testContext As New TestDataContext
+        Using testContext As New TestDataContext
 
-                ' Print SQL queries to the console for testing purposes
-                testContext.Log = Console.Out
+            ' Print SQL queries to the console for testing purposes
+            testContext.Log = Console.Out
 
-                ' Get attached entities
-                Dim users = GetAttachedUsersWithGroups(testContext)
+            ' Get attached entities
+            Dim users = GetAttachedUsersWithGroups(testContext)
 
-                ' Make some random changes to prove the concept
-                users.First.userName = "foo"
-                users.First.Articles.First.text = "bar"
+            ' Make some random changes to prove the concept
+            users.First.userName = "foo"
+            users.First.Articles.First.text = "bar"
 
-                ' Submit the changes to see what SQL gets executed
-                testContext.SubmitChanges()
+            ' Submit the changes to see what SQL gets executed
+            testContext.SubmitChanges()
 
-            End Using
+        End Using
 
-            Console.ReadKey()
+        Console.ReadKey()
 
-        End Sub
+    End Sub
 
-        Public Function GetAttachedUsersWithGroups(ByVal context As TestDataContext) As IEnumerable(Of User)
+    Public Function GetAttachedUsersWithGroups(
+        ByVal context As TestDataContext) As IEnumerable(Of User)
 
-            ' Get some data from a stored procedure
-            Dim result = context.GetAllUsersWithArticles
+        ' Get some data from a stored procedure
+        Dim result = context.GetAllUsersWithArticles
 
-            ' Convert flat result set to groups of articles by user
-            Dim userGroups = From row In result _
-                             Group row By row.userID, row.userTimestamp _
-                             Into articles = Group _
-                             Select userID, userTimestamp, articles
+        ' Convert flat result set to groups of articles by user
+        Dim userGroups = From row In result _
+                         Group row By row.userID, row.userTimestamp _
+                         Into articles = Group _
+                         Select userID, userTimestamp, articles
 
-            Dim users As New List(Of User)
+        Dim users As New List(Of User)
 
-            ' Create LINQ to SQL entities
-            For Each userGroup In userGroups
-                Dim user As New User With {.userID = userGroup.userID, _
-                                           .ts = userGroup.userTimestamp}
-                For Each article In userGroup.articles
-                    user.Articles.Add(New Article With {.articleID = article.articleID, _
-                                                        .title = article.title, _
-                                                        .ts = article.articleTimestamp})
-                Next
-                users.Add(user)
+        ' Create LINQ to SQL entities
+        For Each userGroup In userGroups
+            Dim user As New User With {.userID = userGroup.userID, _
+                                       .ts = userGroup.userTimestamp}
+            For Each article In userGroup.articles
+                user.Articles.Add(New Article With {
+                    .articleID = article.articleID, _
+                    .title = article.title, _
+                    .ts = article.articleTimestamp})
             Next
+            users.Add(user)
+        Next
 
-            ' Attach the users to the data context.  This will also attach the articles
-            ' because they have been added to each user's Articles collection.
-            context.Users.AttachAll(users)
+        ' Attach the users to the data context.  This will also attach the articles
+        ' because they have been added to each user's Articles collection.
+        context.Users.AttachAll(users)
 
-            Return users
+        Return users
 
-        End Function
+    End Function
 
-    End Module
+End Module
+```

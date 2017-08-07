@@ -3,14 +3,18 @@ labels: .NET, C#, VB.NET
 
 I often find that I get so used to using <code>List&lt;T&gt;</code> for my collections that I forget to consider whether it is really the right tool for the job.  If the collection is not ordered, and you don't want duplicates then there are a lot of benefits to using <code>HashSet&lt;T&gt;</code>.  For example with <code>List&lt;T&gt;</code> you'll find yourself writing code like this:<!--break-->
 
-	if (!myCollection.Contains(newString))
-	{
-	    myCollection.Add(newString);
-	}
+```csharp
+if (!myCollection.Contains(newString))
+{
+    myCollection.Add(newString);
+}
+```
 
 This is a little verbose and it's also inefficient.  Every time you call <code>Contains()</code> the entire collection has to be scanned.  With a <code>HashSet&lt;T&gt;</code> set operations are optimized and the code is simpler:
 
-	myHashSet.Add(newString);
+```csharp
+myHashSet.Add(newString);
+```
 
 The other benefit is that you actually enforce the no duplicate rule since adding the same element more than once will have no effect.  Here's what the MSDN documentation says about <code>HashSet&lt;T&gt;</code>:
 

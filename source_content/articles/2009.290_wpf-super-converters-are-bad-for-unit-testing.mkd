@@ -3,16 +3,18 @@ labels: .NET, Unit Testing, WPF
 
 I recently learned about a <a href="http://wpfconverters.codeplex.com/">WPF converter library on CodePlex</a>.  They are all very flexible and it is pretty amazing what you can do with just a few converters.  Here's a sample usage of one of the converters from the project's <a href="http://wpfconverters.codeplex.com/wikipage?title=User%20Documentation&referringTitle=Home">documentation</a><!--break-->:
 
-	<MultiBinding>
-		<MultiBinding.Converter>
-			<con:ExpressionConverterExtension>
-				<con:ExpressionConverterExtension.Expression>
-					<![CDATA[
-					{0} && {1} && {3} && !{2}
-					]]>
-				</con:ExpressionConverterExtension.Expression>
-			</con:ExpressionConverterExtension>
-		</MultiBinding.Converter>
-	</MultiBinding>
+```xml
+<MultiBinding>
+	<MultiBinding.Converter>
+		<con:ExpressionConverterExtension>
+			<con:ExpressionConverterExtension.Expression>
+				<![CDATA[
+				{0} && {1} && {3} && !{2}
+				]]>
+			</con:ExpressionConverterExtension.Expression>
+		</con:ExpressionConverterExtension>
+	</MultiBinding.Converter>
+</MultiBinding>
+```
 
-This MultiConverter returns true if parameters 0, 1 and 3 are true and parameter 2 is false.  At first this looks pretty awesome, but I think it is a little dangerous for any team trying to maximize their test coverage.  As soon as you start putting relatively complex logic right into your XAML you are basically writing code that cannot be tested.  One of the fundamental principles of MVVM is that your view should be simple.  If this {0} && {1} && {3} && !{2} logic is moved to a regular converter, or better yet (maybe) into a ModelView it becomes testable code.
+This MultiConverter returns true if parameters 0, 1 and 3 are true and parameter 2 is false.  At first this looks pretty awesome, but I think it is a little dangerous for any team trying to maximize their test coverage.  As soon as you start putting relatively complex logic right into your XAML you are basically writing code that cannot be tested.  One of the fundamental principles of MVVM is that your view should be simple.  If this `{0} && {1} && {3} && !{2}` logic is moved to a regular converter, or better yet (maybe) into a ModelView it becomes testable code.

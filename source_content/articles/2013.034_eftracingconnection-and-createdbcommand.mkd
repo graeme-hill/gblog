@@ -3,12 +3,14 @@ labels: Entity Framework, C#
 
 I've been using the `EFTracingConnection` class that comes as a part of the [Entity Framework Provider Wrappers](http://efwrappers.codeplex.com/) project. It works wonderfully well for tracking the SQL queries that get executed with the Entity Framework `DbContext` but I ran into a snag when I combined it with the [EntityFramework.Extended](https://github.com/loresoft/EntityFramework.Extended) library for batch operations. I started getting a `NotSupportedException` whenever I tried to execute a batch operation with the tracing connection enabled. It turns out the EntityFramework.Extended internally uses `DbConnection.CreateDbCommand()` to run its SQL. However, the `EFTracingConnection` implementation does not implement that method since it acts as a wrapper for `DbConnection` even though it also inherits from it (ie: `EFTracingConnection` _has a_ `DbConnection` even though it also _is a_ `DbConnection`). The fix is to make a subclass of `EfTracingConnection` and implement the method by invoking it on the wrapped object:
 
-    public class MyTracingConnection : EFTracingConnection
+```csharp
+public class MyTracingConnection : EFTracingConnection
+{
+    protected override System.Data.Common.DbCommand CreateDbCommand()
     {
-        protected override System.Data.Common.DbCommand CreateDbCommand()
-        {
-            return this.WrappedConnection.CreateCommand();
-        }
+        return this.WrappedConnection.CreateCommand();
     }
+}
+```
 
 So far this seems to work like a charm.

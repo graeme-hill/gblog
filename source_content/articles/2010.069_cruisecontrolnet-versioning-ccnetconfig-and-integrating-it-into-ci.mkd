@@ -10,22 +10,24 @@ labels: Continuous Integration, CruiseControl.NET, SVN
 
 Both of these issues are actually very easy to solve.  Using SVN, you can create a repository with only one file: ccnet.config.  Then add this project to <em>both</em> the ccnet.config in SVN and the one actually used by Cruise Control (probably in C:\Program Files\CruiseControl.NET or something like that):
 
-    <project name="ccnet config">
-        <sourcecontrol type="svn">
-            <executable>C:\path\to\svn\on\CI\server\svn.exe</executable>
-            <workingDirectory>C:\CI</workingDirectory>
-            <trunkUrl>http://localhost/svn/myrepo/trunk</trunkUrl>
-            <autoGetSource>true</autoGetSource>
-            <username>SVN_USERNAME</username>
-            <password>SVN_PASSWORD</password>
-        </sourcecontrol>
-        <tasks>
-            <exec>
-                <executable>C:\Windows\System32\xcopy.exe</executable>
-                <buildArgs>/Y C:\CI\ccnet-config\ccnet.config "C:\Program Files\CruiseControl.NET\server"</buildArgs>
-            </exec>
-        </tasks>
-    </project>
+```xml
+<project name="ccnet config">
+  <sourcecontrol type="svn">
+    <executable>C:\path\to\svn\on\CI\server\svn.exe</executable>
+    <workingDirectory>C:\CI</workingDirectory>
+    <trunkUrl>http://localhost/svn/myrepo/trunk</trunkUrl>
+    <autoGetSource>true</autoGetSource>
+    <username>SVN_USERNAME</username>
+    <password>SVN_PASSWORD</password>
+  </sourcecontrol>
+  <tasks>
+    <exec>
+      <executable>C:\Windows\System32\xcopy.exe</executable>
+      <buildArgs>/Y C:\...\ccnet.config "C:\...\CruiseControl.NET\server"</buildArgs>
+    </exec>
+  </tasks>
+</project>
+```
 
 All this does is check out the config file and then copy it to the location used by Cruise Control.  Remember to edit all the paths above with the actual ones for your setup.
 

@@ -5,20 +5,24 @@ VB.NET has the sometimes useful feature of late binding, but this seems to lead 
 
 With <code>Option Strict Off</code> we can write code like this:
 
-<pre lang="VB">
-	Dim obj As Object = "Hello, World!"
-	Dim str As String = obj
-</pre>
+```vbnet
+Dim obj As Object = "Hello, World!"
+Dim str As String = obj
+```
 
 In this case the code will run just fine, and it saved us the hassle of casting <code>obj</code> to <code>String</code>.  However, we will obviously run into problems in a situation like this:
 
-	Dim obj As Object = "Hello, World!"
-	Dim int As Integer = obj
+```vbnet
+Dim obj As Object = "Hello, World!"
+Dim int As Integer = obj
+```
 
 Even though <code>int</code> is an <code>Integer</code> this code will compile, but at runtime there will be an <code>InvalidCastException</code>.  This is all pretty simple stuff, but the bottom line is that in this case, <code>Option Strict Off</code> gives a runtime error, while <code>Option Strict On</code> gives a compile error.  The value of compile-time errors should not be taken lightly, and in my humble opinion they are a programmer's best friend.  With <code>Option Strict On</code> our first sample only needs a minor change:
 
-	Dim obj As Object = "Hello, World!"
-	Dim str As String = DirectCast(obj, String)
+```vbnet
+Dim obj As Object = "Hello, World!"
+Dim str As String = DirectCast(obj, String)
+```
 
 Was it really that difficult just to cast it?  Type casting is not an inconvenience, but a necessary precaution requiring the programmer to say to the compiler: "Yes, I did intend to perform a narrowing conversion.  It was not an accident".
 

@@ -3,17 +3,19 @@ labels: .NET, C,#, LINQ, LINQ to SQL, SQL Server
 
 If you keep the same entity around after it has been deleted and <code>SubmitChanges()</code> is called then you can run into an <code>InvalidOperationException</code> if you try to insert it again<!--break-->.
 
-	var data = new DataClasses1DataContext();
-	var user = new User() { userName = "foo", password = "bar" };
+```csharp
+var data = new DataClasses1DataContext();
+var user = new User() { userName = "foo", password = "bar" };
 
-	data.Users.InsertOnSubmit(user);
-	data.SubmitChanges();
+data.Users.InsertOnSubmit(user);
+data.SubmitChanges();
 
-	data.Users.DeleteOnSubmit(user);
-	data.SubmitChanges();
+data.Users.DeleteOnSubmit(user);
+data.SubmitChanges();
 
-	data.Users.InsertOnSubmit(user);
-	data.SubmitChanges();
+data.Users.InsertOnSubmit(user);
+data.SubmitChanges();
+```
 
 Here you will actually get an exception on the second <code>InsertOnSubmit()</code> because the data context remembered the entity and will no longer allow you to attach it for some reason.  Once an entity has been deleted from a data context it can never go back.  To get around this you need to either insert the entity to a different data context or copy the data to a new instance of the same entity class and then insert it.  This has been confirmed <a href="http://social.msdn.microsoft.com/Forums/en-US/linqprojectgeneral/thread/6602af13-1d27-4f9a-b7e0-9c58238f6c55">here</a>.
 

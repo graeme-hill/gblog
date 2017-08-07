@@ -18,15 +18,17 @@ It turns out that in cases like this where we have many small rendering operatio
 
 The included sample draws 1000 <code>TextBox</code>es inside an <code>ItemsControl</code>, but after each element is added the Windows message queue is flushed out using the <code>FlushWindowsMessageQueue</code> function.  All the functions does is tell the dispatcher to invoke a delegate that does nothing.  The result is that the code blocks at that line until the specified delegate has been run.  But since it is at the end of the queue, everything else has to be dealt with first.  The function looks like this:
 
-	Private Sub FlushWindowsMessageQueue()
-	    Application.Current.Dispatcher.Invoke( _
-	        New Action(AddressOf DummySub), _
-	        DispatcherPriority.Background, _
-	        New Object() {})
-	End Sub
+```vbnet
+Private Sub FlushWindowsMessageQueue()
+    Application.Current.Dispatcher.Invoke( _
+        New Action(AddressOf DummySub), _
+        DispatcherPriority.Background, _
+        New Object() {})
+End Sub
 
-	Private Sub DummySub()
-	End Sub
+Private Sub DummySub()
+End Sub
+```
 
 When the sample is run with the <code>FlushWindowsMessageQueue()</code> line commented out the whole UI will lock up for a couple of seconds after you click "Refresh data".  However, when the message queue is emptied after each element is added the UI never locks up, even when it is still drawing <code>TextBox</code>es.
 
