@@ -1,0 +1,160 @@
+title: Testing Phoenix Channels
+labels: Elixir, Phoenix, Testing
+
+This topic has been written about a lot, but in spite of that I found myself
+reading the code in (https://github.com/phoenixframework/phoenix/blob/master/lib/phoenix/test/channel_test.ex)[channel_test.ex]
+to figure out exactly how everything fits together. Specifically, I wanted to
+cover a few things that I couldn't get just from reading
+(https://hexdocs.pm/phoenix/Phoenix.ChannelTest.html)[this page] on hexdocs.
+
+### Step 1: Make a test file
+
+Create a file in `test/myapp_webb/channels/my_channel_test.ex` that looks like
+this:
+
+```elixir
+defmodule MyAppWeb.ChatChannelTest do
+  use MyAppWeb.ChannelCase
+  alias MyAppWeb.ChatChannel
+
+  test "test something" do
+    assert 1 == 1
+  end
+end
+```
+
+then run `mix test` just to make sure it's working.
+
+### Step 2: Connect and join the channel
+
+`Phoenix.ChannelTest` defines a macro called `socket` which makes a fake socket
+connection to your channel. It's a real "connection" but not actually a socket.
+You can then use this `subscribe_and_join` to join the channel and subscribe to
+a topic:
+
+```elixir
+test "join channel" do
+  assert {:ok, _payload, _socket} = socket("", %{})
+   	|> subscribe_and_join(ChatChannel, "room:lobby", %{})
+end
+```
+
+The last parameter to `subscribe_and_join` is the payload to send in the
+`phx_join` event (which would be available in the `join` function of your
+channel) and `_payload` is the the response payload from your `join` function.
+Payloads are often not used when `join`ing but you could use it to pass an
+authentication token or something if necessary.
+
+### Step 3: Send an event from client to server
+
+For this we use the function `push` (all of these functions are from
+`Phoenix.ChannelTest` btw). So now in a test case we could join the channel and
+push an event:
+
+```elixir
+test "join channel and send a message" do
+  assert {:ok, _payload, socket} = socket("", %{})
+    |> subscribe_and_join(ChatChannel, "room:lobby", %{ name: "Graeme" })
+
+  assert ref = push(socket, "message", "hello")
+end
+```
+
+`ref` is just the unique id created for this event. Replies from the server
+would have a matching `ref`.
+
+### Step 4: Test that correct events sent from server to client
+
+There are three relevant macros in `Phoenix.ChannelTest` but their names can be
+a bit confusing since communication is two-way:
+
+* `assert_push` means "assert that the server pushed an event to me."
+* `assert_reply` means "assert that server server replied to my event."
+* `assert_broadcast` means "assert that the server broadcasted an event."
+
+Replies are pretty simple:
+
+```elixir
+test "receive a reply" do
+  assert {:ok, _payload, socket} = socket("", %{})
+    |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "Graeme"})
+
+  assert ref = push(socket, "get_others")
+  assert_reply(ref, :ok, ["John", "Mike", "Sarah"])
+end
+```
+
+Push and broadcast are also pretty easy when you are only testing with one
+client:
+
+```elixir
+test "receive broadcast" do
+  assert {:ok, _payload, socket} = socket("", %{})
+    |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "Graeme"})
+
+  push(socket, "message", "hello")
+  assert_broadcast("message", %{from: "Graeme", content: "hello"})
+end
+```
+
+### Step 5: Test interaction between multiple clients
+
+If there are multiple clients that we want to test we could do something like
+this:
+
+```elixir
+test "receive broadcast" do
+  assert {:ok, _payload, graeme_socket} = socket("", %{})
+    |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "Graeme" })
+
+  assert {:ok, _payload, _john_socket} = socket("", %{})
+    |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "John"})
+
+  assert {:ok, _payload, _sarah_socket} = socket("", %{})
+    |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "Sarah"})
+
+  push(graeme_socket, "message", "hello")
+
+  assert_broadcast("message", %{from: "Graeme", content: "hello"})
+  assert_broadcast("message", %{from: "Graeme", content: "hello"})
+  assert_broadcast("message", %{from: "Graeme", content: "hello"})
+end
+```
+
+That will work, but it's not the best test. All it does is test that it received
+three broadcasted messages, but there's no way of knowing which client they
+were intended for. Since the message is sent to a process we need to do each
+one in its own process:
+
+```elixir
+test "receive broadcast" do
+  t1 = Task.async(fn ->
+    assert {:ok, _payload, graeme_socket} = socket("", %{})
+      |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "Graeme" })
+
+    # Wait for the other two processes to be ready. If the message is sent
+    # before they can join then they won't get it.
+    receive do :proceed -> :ok end
+    receive do :proceed -> :ok end
+
+    push(graeme_socket, "message", "hello")
+    assert_broadcast("message", %{from: "Graeme", content: "hello"})
+  end)
+
+  t2 = Task.async(fn ->
+    assert {:ok, _payload, john_socket} = socket("", %{})
+      |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "John"})
+    send(t1.pid, :proceed)
+    assert_broadcast("message", %{from: "Graeme", content: "hello"})
+  end)
+
+  t3 = Task.async(fn ->
+    assert {:ok, _payload, sarah_socket} = socket("", %{})
+      |> subscribe_and_join(ChatChannel, "room:lobby", %{name: "Sarah"})
+    send(t1.pid, :proceed)
+    assert_broadcast("message", %{from: "Graeme", content: "hello"})
+  end)
+
+  Enum.map([t1, t2, t3], &Task.await/1)
+end
+```
