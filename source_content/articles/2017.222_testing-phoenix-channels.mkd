@@ -2,10 +2,10 @@ title: Testing Phoenix Channels
 labels: Elixir, Phoenix, Testing
 
 This topic has been written about a lot, but in spite of that I found myself
-reading the code in (https://github.com/phoenixframework/phoenix/blob/master/lib/phoenix/test/channel_test.ex)[channel_test.ex]
+reading the code in [channel_test.ex](https://github.com/phoenixframework/phoenix/blob/master/lib/phoenix/test/channel_test.ex)
 to figure out exactly how everything fits together. Specifically, I wanted to
 cover a few things that I couldn't get just from reading
-(https://hexdocs.pm/phoenix/Phoenix.ChannelTest.html)[this page] on hexdocs.
+[this page](https://hexdocs.pm/phoenix/Phoenix.ChannelTest.html) on hexdocs.
 
 ### Step 1: Make a test file
 
