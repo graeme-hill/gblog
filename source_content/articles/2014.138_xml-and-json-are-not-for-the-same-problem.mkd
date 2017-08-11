@@ -1,4 +1,4 @@
-title: XML vs JSON - It's actually pretty complicated
+title: XML and JSON are not for the same problem
 labels: XML, JSON
 
 This is sort of going to be a rant that might just be overly obvious, but I think the difference between markup lanugages
