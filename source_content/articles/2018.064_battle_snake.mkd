@@ -1,0 +1,199 @@
+title: Building an AI for Battlesnake
+labels: AI, C++
+
+This Saturday my teammate Chris and I got first place in Victoria's Battlesnake
+AI competition. Admittedly the game involves some luck which turned out to be on
+our side, but in any case I thought I would explain how our bot worked... for
+science! More details on the competition and how the game actually works can
+be found at [battlesnake.io](http://battlesnake.io).
+
+Our code as used in the competition can be found at
+[github.com/graeme-hill/snakebot](https://github.com/graeme-hill/snakebot).
+
+I'll go through the journey of creating snakebot chronologically because it's
+probably easier to understand why things were done the way they were if
+explained that way.
+
+### Stage 0 - Setting up the project
+
+While still in the prototyping stage everything was done in Javascript with
+Express handling the actual API that allows the game server to interact with
+our bot.
+
+### Stage 1 - Pathfinding
+
+You can't do much useful in a game like this unless you have a pathfinding
+algorithm. Snakebot uses the almost ubiquitous A* algorithm and includes an
+awareness of when a snake's tail components will have moved out of the way.
+That means that you can still travel in a straight line between A and B if the
+snake blocking your way will have moved out of the way by the time you get to
+it.
+
+### Stage 2 - Pathfind TO something
+
+At this point several algorithms are created to test against each other:
+
+* Defensive hungry: chase your tail in circles unless there is a food that you
+can get to faster than any other enemy. This operates on the assumption that (1)
+there is no point going after food that someone else could get to first and (2)
+deviating from the boring tail chase technique could move you into a dangerous
+position.
+
+* Hungry: just continually navigate to the closest food all the time.
+
+* Chase Tail: endlessly chase your tail and inevitably starve to death. Hilariously
+this can actually still win sometimes and apparently it did in a past
+battlesnake competition :)
+
+### Stage 3 - Don't commit suicide
+
+The above algorithms make for an almost passable bot but they still die pretty
+quickly. It doesn't take too long before the hungry algorithms will chase a food
+down a dead end crashing into a wall. There are a lot of ways to avoid this
+pitfall, but instead of directly computing whether a tunnel has an exit snakebot
+simply attempts to simulate as many future moves as possible. If a potential
+move would navigate the snake into a suicidal tunnel then the result of the
+simulation should be that you die in a few turns. When that is the case you
+need to think about not doing that thing. Conceptually this sounds simple, but
+it's hard to see into the future when you only control one of the snakes. You
+also need to know where the other snakes will go and there isn't enough
+computing power in the world to simulate every permutation of moves that could
+occur over a meaningful timespan. To address this, snakebot supports a system
+that looks sort of like this in pseudo-code:
+
+```
+my_algorithms = [hungry, chase_tail]
+enemy_algorithms = [hungry, chase_tail]
+possibleFutures = simulateFutures(game_state, my_algorithms, enemy_algorithms)
+best_direction = best_future(possible_futures).direction
+```
+
+In this scenario it will calculate 4 different futures because there are 4
+combinations of the given algorithms. Note that the number of simulated futures
+does not increase with more enemies in the game. It will simulate all of the
+enemies using the same algorithm simply because there would otherwise be too
+many combinations. This is a potential flaw in the system.
+
+Despite some obvious issues the bot now works a lot better. `best_future` will
+consider a future where the snake gets food better than one where it does not,
+and it will consider a future where it survives better than one where it crashes
+or starves. The snake no longer enters suicide tunnels just to grab the nearest
+food... actually sometimes it does... more on that in the next section.
+
+### Stage 4 - Get smarter
+
+In the example above sometimes both `hungry` and `chase_tail` will initially
+move in the same direction. If left is the best direction to move in but both
+algorithms test going right you really haven't done much at all. We can add more
+algorithms but the same problem will always have a chance of popping up:
+simulating futures is only useful if the futures are sufficiently diverse. To
+address this, "prefix moves" are added. The pseudo-code now looks like:
+
+```
+my_algorithms = [
+    { algorithm: hungry, prefix_moves: [ [up], [left], [right], [down] ] },
+    { algorithm: chase_tail, prefix_moves: [ [up], [left], [right], [down] ] }
+]
+enemy_algorithms = [
+    { algorithm: hungry, prefix_moves: [ [up], [left], [right], [down] ] },
+    { algorithm: chase_tail, prefix_moves: [ [up], [left], [right], [down] ] }
+]
+possibleFutures = simulateFutures(game_state, my_algorithms, enemy_algorithms)
+best_direction = best_future(possible_futures).direction
+```
+
+Now each algorithm is more like 4 algorithms. Instead of just testing chasing
+its tail, it will test moving left, then chasing its tail and so on. This has a
+surprising improvement on the snake's behavior. Because each decision is
+considered from scratch and every immediate direction is tested on each move,
+the snake suddenly starts to seem like it is navigating on its own. It does
+things it wasn't directly told to do and sometimes they are really smart (but
+not always). There is a problem though, bots are only allowed 200ms to respond
+to the server and we just exploded the number of simulation branches from 4 to
+64.
+
+### Stage 5 - Performance matters
+
+At this point it's clear that we need to simulate enough branches far enough in
+the future that performance will be a serious challenge. When raw CPU
+performance matters, javascript is not the right tool for the job. Almost all of
+the code is rewritten in C++ except for the actual HTTP endpoints. Those are
+still javacript and they invoke the actual logic implemented in C++ using N-API
+which is a new part of NodeJS's C++ addon system.
+
+The C++ implementation is a huge improvement, but more optimizations were
+necessary after the port:
+
+* Avoid heap allocations. Several functions need to build lists, dictionary,
+sets etc. to do there work but these all involve dynamically adding heap memory
+as you go. In critical areas heap space is reserved in a memory pool.
+* Don't run A* function too often. It is a performance killer. Functions like
+`bestFood` which previous took the naive approach of calculating the A* path
+from every snake to every food absolutely destroy performance when you have 10
+snakes and 20 foods. `bestFood` is improved by only finding paths that may
+actually be selected.
+* Inline all the things. Sometimes inlining functions can actually have a
+negative effect on performance, but usually when you have a small function that
+gets called a lot inlining is better.
+
+### Stage 6 - Parallelization
+
+Since most of the work is in running the simulations which are already broken
+into distinct branches it makes sense to make as many groups of branches as
+there are CPUs on the system and then run them in parallel. Now the performance
+is finally fast enough that we can simulate enough to make good decisions and
+still respond within the time limit.
+
+### Stage 7 - Get Aggressive
+
+Now snakebot is decent at not dying but misses opportunities to kill other
+snakes. We experiment with algorithms that chase enemies heads or attempt to
+cut them off. This can have the double benefit of testing aggressive tactics,
+but also considering the possible aggressive tactics of enemies and avoiding
+bad situations. `best_future` is modified to prefer futures that involve enemies
+dying over similar futures where no enemy dies. Suddenly now snakebot will
+change course unexpectedly and kill another snake. Very satisfying!
+
+### Stage 8 - Adding heuristics
+
+Even with everything done so far there are still quite a few scenarios where
+snakebot does dumb things. Most bad decisions are made for one of three reasons:
+
+* The scoring function that decides which future is best makes the wrong
+decision. eg: the snake starves to death because it isn't giving enough weight
+to futures where food is eaten as health gets lower.
+* There was a possible non-fatal future but we only simulated the ones that
+result in death.
+* The simulation algorithms were adequate, but we didn't simulate far enough in
+the future to make the right decision. A simple example of this is that
+sometimes the snake will still navigate down a suicide tunnel. If the tunnel is
+10 cells long but we only simulated 9 turns in advance (normally we simulate a
+lot more than that) then it won't see any problem with entering that tunnel.
+
+It's not possible to guarantee that the simulations will return all the
+information needed, so heuristic functions are added to estimate the safety of
+different moves. Now a future that looks like it might be moving into a box
+smaller than the snake itself will be considered a bad move.
+
+### Stage 9 - Final iterations
+
+At this point the most useful thing to do was to play as many games against
+other snakes as possible. We found that a lot of our losses were due to a few
+recurring problems:
+
+* Sometimes we STILL navigate into suicide tunnels.
+* Snakebot frequently ends up corner-adjacent to a bigger snake and has no
+good option.
+
+Both of the above issues were "fixed" on the actual day of the competition. We
+didn't really have enough time to test so we just went with it and crossed our
+fingers. We only had to go 2-0 to win the competition so we don't have a very
+big sample size to prove whether those changes we necessary or even an
+improvement.
+
+For the actual competition we ran on a 72 core CPU optimized EC2 instance since
+the bot does a lot better when it has the ability to simulate more.
+
+I definitely skimped on some details here, so if you want to know more just
+check out the code on our github repo. Next year maybe we can use this snake to
+help train a neural network :)
