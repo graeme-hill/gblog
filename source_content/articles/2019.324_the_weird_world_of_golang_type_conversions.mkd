@@ -1,0 +1,137 @@
+title: The weird world of Golang type conversions
+labels: Go
+
+Note: most of this post is about Go type conversions. In the official Go
+documentation there are a lot of examples of specific conversions but I could
+not find an authoritative explanation for how they work in a generic sense. As
+such some of the information in this post is educated speculation based on
+trial and error.
+
+I recently saw a snippet of Go in a test that looked like this:
+
+```go
+require.Equal(t, []string{"foo"}, ([]string)(myStrings))
+```
+
+Because of the parenthesis around `([]string)` in the type conversion I thought
+for a second that I was looking at a C or Java style type cast that I didn't
+know existed in Go. After my brain recalibrated I realized that it could have
+been written without the parenthesis:
+
+```go
+require.Equal(t, []string{"foo"}, []string(myStrings))
+```
+
+Okay, so it's doing that magic Go type constructor thing that you see with
+number conversions and `string` to `[]byte` conversions. So this got me wanting
+to know what that feature is actually called and how it works in a more generic
+sense. Is this a core feature of Go, or have they just hard coded it for
+built-in types?
+
+After some awkward Googling I learned some things:
+
+### Type conversions vs type assertions
+
+The normal way that we "cast" things in go is with a type assertion:
+
+```go
+type Foo struct {}
+
+func DoThing(obj interface{}) {
+    // This is a type *assertion*
+    foo, ok := obj.(Foo)
+    if ok {
+        fmt.Printf("It's a foo: %v", foo)
+    } else {
+        fmt.Printf("It's not a foo: %v", obj)
+    }
+}
+```
+
+And this is called a type conversion:
+
+```go
+func DoThing(s string) {
+    // This is a type *conversion*
+    bytes := []byte(s)
+    fmt.Printf("Here's the bytes from your string: %v", bytes)
+}
+```
+
+### Definitions
+
+A *type assertion* is an attempted dynamic cast that will return a shallow
+copy of the object casted to the desired type and a boolean telling you whether
+it was successful.
+
+A *type conversion* is equal to creating a new instance of the target type will
+the same value(s). For primitive types like int64 this is like defining a new
+variable with the same literal. For structs this is like defining a new
+where all the struct fields have the same value.
+
+### Type assertions
+
+In this statement:
+
+```go
+b, ok := a.(B)
+```
+
+In order for the assertion to be successfull (ie: `ok` is `true`) `a` must
+already have type `B`. This is useful when you just have an interface
+(including the empty interface `interface{}`) and you want to attempt a cast to
+a concrete type that implements that interface, or else do some other behaviour
+if it does not.
+
+### Type conversions
+
+```go
+b := B(a)
+```
+
+In order for this to *compile* (because this is checked statically) one of the
+following must be valid:
+
+    1. `b` could have been initialized with the same literal primitive as `a`
+    2. `B` is a struct with all the same fields contained in `a`
+
+Because of rule #1 we can do number conversion like this:
+
+```go
+var x uint64 = 7
+var y int32 = int32(x)
+```
+
+Because of rule #2 we can do struct conversion like this:
+
+```go
+type Person struct {
+    Email string
+}
+
+type User struct {
+    Email string
+}
+
+func main() {
+    person := Person{Email: "foo@bar.com"}
+    user := User(person)
+    // ...
+}
+```
+
+The line `user := User(person)` is the same as creating a new user and setting
+all of the fields to the same value as the fields from `person` *including the
+private fields*.
+
+Rule #2 could also explain why Go supports this idiomatic conversion:
+
+```go
+s := "Hello"
+b := []byte(s)
+```
+
+Behind the scenes a slice is just an array container with a length, and a
+string is basically the same thing: a length and some bytes that represent the
+characters in the string. They have the same duck type and can therefore be
+converted to/from one another.
