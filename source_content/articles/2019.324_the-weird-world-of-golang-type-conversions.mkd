@@ -62,12 +62,14 @@ func DoThing(s string) {
 
 A *type assertion* is an attempted dynamic cast that will return a shallow
 copy of the object casted to the desired type and a boolean telling you whether
-it was successful.
+it was successful. Since it is a shallow copy, if the type is a pointer to
+something then just the pointer is copied. The value it points to is the same.
 
 A *type conversion* is equal to creating a new instance of the target type will
 the same value(s). For primitive types like int64 this is like defining a new
 variable with the same literal. For structs this is like defining a new
-where all the struct fields have the same value.
+variable where all the struct fields are assigned the same value (ie: each
+field is shallow copied).
 
 ### Type assertions
 
